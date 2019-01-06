@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="VH8V5Z" name="bancom" projectType="audioplug" jucerVersion="5.4.1"
-              pluginFormats="buildStandalone,buildVST,buildVST3" headerPath="/home/shyman/Documents/Workspace/SDK/VST_SDK/VST2_SDK">
+              pluginFormats="buildStandalone,buildVST,buildVST3" headerPath="/home/shyman/Documents/Workspace/SDK/VST_SDK/VST2_SDK"
+              pluginManufacturer="5hy" aaxIdentifier="men.5hy.bancom">
   <MAINGROUP id="WN204n" name="bancom">
     <GROUP id="{E8397F12-EA48-045A-8291-C5C9AF8D6CA4}" name="Source">
       <FILE id="jx8UHQ" name="PluginProcessor.cpp" compile="1" resource="0"
@@ -11,6 +12,8 @@
       <FILE id="k277ds" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="teZy1W" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="iGIOTR" name="helpers.h" compile="0" resource="0" file="Source/helpers.h"/>
+      <FILE id="ORqzEj" name="helpers.cpp" compile="1" resource="0" file="Source/helpers.cpp"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
@@ -35,6 +38,7 @@
         <MODULEPATH id="juce_gui_extra" path="../../../../../../../opt/JUCE/modules"/>
         <MODULEPATH id="juce_opengl" path="../../../../../../../opt/JUCE/modules"/>
         <MODULEPATH id="juce_video" path="../../../../../../../opt/JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../../../../../../opt/JUCE/modules"/>
       </MODULEPATHS>
     </LINUX_MAKE>
   </EXPORTFORMATS>
@@ -49,6 +53,7 @@
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>

@@ -14,12 +14,12 @@
 
 class GainProcessor  : public ProcessorBase
 {
-public:
-    GainProcessor();
-    const String getName() const override;
-    void prepareToPlay (double sampleRate, int samplesPerBlock) override;
-    void processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages) override;
-    void reset() override;
-private:
-    dsp::Gain<float> gain;
+    public:
+	GainProcessor();
+	const String getName() const override;
+	void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+	void processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages) override;
+	void reset() override;
+    private:
+	dsp::Gain<float> gain;
 };

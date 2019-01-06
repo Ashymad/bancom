@@ -14,21 +14,21 @@
 //==============================================================================
 BancomAudioProcessor::BancomAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", AudioChannelSet::stereo(), true)
-                     #endif
-                       )
+    : AudioProcessor (BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+	    .withInput  ("Input",  AudioChannelSet::stereo(), true)
+#endif
+	    .withOutput ("Output", AudioChannelSet::stereo(), true)
+#endif
+	    )
 #endif
 {
 }
 
 BancomAudioProcessor::~BancomAudioProcessor()
 {
-    
+
 }
 
 //==============================================================================
@@ -39,29 +39,29 @@ const String BancomAudioProcessor::getName() const
 
 bool BancomAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
+#if JucePlugin_WantsMidiInput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool BancomAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
+#if JucePlugin_ProducesMidiOutput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool BancomAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 double BancomAudioProcessor::getTailLengthSeconds() const
@@ -72,7 +72,7 @@ double BancomAudioProcessor::getTailLengthSeconds() const
 int BancomAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+    // so this should be at least 1, even if you're not really implementing programs.
 }
 
 int BancomAudioProcessor::getCurrentProgram()
@@ -109,24 +109,24 @@ void BancomAudioProcessor::releaseResources()
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool BancomAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     ignoreUnused (layouts);
     return true;
-  #else
+#else
     // This is the place where you check if the layout is supported.
     // In this template code we only support mono or stereo.
     if (layouts.getMainOutputChannelSet() != AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != AudioChannelSet::stereo())
-        return false;
+	    && layouts.getMainOutputChannelSet() != AudioChannelSet::stereo())
+	return false;
 
     // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
+#if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-        return false;
-   #endif
+	return false;
+#endif
 
     return true;
-  #endif
+#endif
 }
 #endif
 
@@ -143,7 +143,7 @@ void BancomAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer&
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+	buffer.clear (i, 0, buffer.getNumSamples());
 
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
@@ -153,9 +153,9 @@ void BancomAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer&
     // interleaved by keeping the same state.
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
+	auto* channelData = buffer.getWritePointer (channel);
 
-        // ..do something to the data...
+	// ..do something to the data...
     }
 }
 

@@ -11,50 +11,51 @@
 #include "IIRFilterCascadeProcessor.h"
 
 IIRFilterCascadeProcessor::IIRFilterCascadeProcessor() :
-    cascade(Array<IIRFilter>())
+    cascade(OwnedArray<dsp::IIR::Filter<float>>())
+{
+}
+
+IIRFilterCascadeProcessor::~IIRFilterCascadeProcessor()
 {
 }
 void IIRFilterCascadeProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-
+    spec = { sampleRate, static_cast<uint32> (samplesPerBlock), 2 };
 }
-void IIRFilterCascadeProcessor::addFilter(IIRFilter& filter)
+void IIRFilterCascadeProcessor::addFilter(dsp::IIR::Filter<float>& filter)
 {
+    cascade.add(&filter);
+}
+void IIRFilterCascadeProcessor::addFilterFromCoefficients(dsp::IIR::Coefficients<float>::Ptr coefficients)
+{
+    dsp::IIR::Filter<float>*filter = new dsp::IIR::Filter<float>(coefficients);
+    filter->prepare(spec);
     cascade.add(filter);
 }
-void IIRFilterCascadeProcessor::addFilter(Array<IIRFilter>& filters)
+void IIRFilterCascadeProcessor::addFilterFromCoefficients(ReferenceCountedArray<dsp::IIR::Coefficients<float>>& coefficients)
 {
-    cascade.addArray(filters);
-}
-void IIRFilterCascadeProcessor::addFilterFromCoefficients(IIRCoefficients& coefficients)
-{
-    IIRFilter filter = IIRFilter();
-    filter.setCoefficients(coefficients);
-    cascade.add(filter);
-}
-void IIRFilterCascadeProcessor::addFilterFromCoefficients(ReferenceCountedArray<IIRCoefficients> coefficients)
-{
-    for (IIRCoefficients* coeffs : coefficients)
+    for (dsp::IIR::Coefficients<float>::Ptr coeffs : coefficients)
     {
-	addFilterFromCoefficients(*coeffs);
+	addFilterFromCoefficients(coeffs);
     }
 }
 void IIRFilterCascadeProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    int numSamples = buffer.getNumSamples();
-    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+    for (dsp::IIR::Filter<float>* filter : cascade)
     {
-	auto wPointer = buffer.getWritePointer(channel);
-	for (IIRFilter& filter : cascade)
-	{
-	    filter.processSamples(wPointer, numSamples);
-	}
+	dsp::AudioBlock<float> block (buffer);
+	dsp::ProcessContextReplacing<float> context (block);
+	filter->process(context);
     }
+}
+const String IIRFilterCascadeProcessor::getName() const
+{
+    return "IIRFilterCascadeProcessor";
 }
 void IIRFilterCascadeProcessor::reset()
 {
-    for (IIRFilter& filter : cascade)
+    for (dsp::IIR::Filter<float>* filter : cascade)
     {
-	filter.reset();
+	filter->reset();
     }
 }

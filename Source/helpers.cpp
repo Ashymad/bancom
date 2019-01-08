@@ -11,39 +11,38 @@
 #include "helpers.h"
 
 template<typename FloatType>
-ReferenceCountedArray<IIRCoefficients> designIIRLowpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order)
+ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> designIIRLowpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order)
 {
     jassert(order % 2 == 0);
-    ReferenceCountedArray<IIRCoefficients> coeff = dsp::FilterDesign<FloatType>::designIIRLowpassHighOrderButterworthMethod(frequency, sampleRate, order/2);
+    ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> coeff = dsp::FilterDesign<FloatType>::designIIRLowpassHighOrderButterworthMethod(frequency, sampleRate, order/2);
     coeff.addArray(coeff);
     return coeff;
 }
 
 template<typename FloatType>
-ReferenceCountedArray<IIRCoefficients> designIIRHighpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order)
+ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> designIIRHighpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order)
 {
     jassert(order % 2 == 0);
-    ReferenceCountedArray<IIRCoefficients> coeff = dsp::FilterDesign<FloatType>::designIIRHighpassHighOrderButterworthMethod(frequency, sampleRate, order/2);
+    ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> coeff = dsp::FilterDesign<FloatType>::designIIRHighpassHighOrderButterworthMethod(frequency, sampleRate, order/2);
     coeff.addArray(coeff);
     return coeff;
 }
 
-template<typename FloatType>
-ReferenceCountedArray<IIRFilterCascadeProcessor> designLRFilterBank(Array<FloatType> frequencies, double sampleRate, int order)
+OwnedArray<IIRFilterCascadeProcessor> designLRFilterBank(Array<float>& frequencies, double sampleRate, int order)
 {
     int crosses = frequencies.size();
 
-    Array<ReferenceCountedArray<IIRCoefficients>> LPs;
-    Array<ReferenceCountedArray<IIRCoefficients>> HPs;
-    ReferenceCountedArray<IIRFilterCascadeProcessor> filterBank = ReferenceCountedArray<IIRFilterCascadeProcessor>();
+    OwnedArray<ReferenceCountedArray<dsp::IIR::Coefficients<float>>> LPs;
+    OwnedArray<ReferenceCountedArray<dsp::IIR::Coefficients<float>>> HPs;
+    OwnedArray<IIRFilterCascadeProcessor> filterBank = OwnedArray<IIRFilterCascadeProcessor>();
     filterBank.add(new IIRFilterCascadeProcessor());
 
     frequencies.sort();
     
-    for (FloatType frequency : frequencies)
+    for (float frequency : frequencies)
     {
-	LPs.add(designIIRLowpassHighOrderLRMethod(frequency, sampleRate, order));
-	HPs.add(designIIRHighpassHighOrderLRMethod(frequency, sampleRate, order));
+	LPs.add(new ReferenceCountedArray<dsp::IIR::Coefficients<float>>(designIIRLowpassHighOrderLRMethod(frequency, sampleRate, order)));
+	HPs.add(new ReferenceCountedArray<dsp::IIR::Coefficients<float>>(designIIRHighpassHighOrderLRMethod(frequency, sampleRate, order)));
 	filterBank.add(new IIRFilterCascadeProcessor());
     }
     
@@ -51,7 +50,7 @@ ReferenceCountedArray<IIRFilterCascadeProcessor> designLRFilterBank(Array<FloatT
     {
 	for (int filter = 0; filter < crosses; ++filter)
 	{
-	    filterBank[processor]->addFilterFromCoefficients(processor > filter ? LPs[filter] : HPs[filter]);
+	    filterBank[processor]->addFilterFromCoefficients(processor > filter ? *LPs[filter] : *HPs[filter]);
 	}
     }
 

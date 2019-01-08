@@ -5,17 +5,10 @@
               pluginManufacturer="5hy" aaxIdentifier="men.5hy.bancom">
   <MAINGROUP id="WN204n" name="bancom">
     <GROUP id="{E8397F12-EA48-045A-8291-C5C9AF8D6CA4}" name="Source">
-      <FILE id="HeYX6N" name="SumProcessor.cpp" compile="1" resource="0"
-            file="Source/SumProcessor.cpp"/>
-      <FILE id="fuUE38" name="SumProcessor.h" compile="0" resource="0" file="Source/SumProcessor.h"/>
-      <FILE id="tG1QrY" name="IIRFilterCascade.cpp" compile="1" resource="0"
-            file="Source/IIRFilterCascade.cpp"/>
-      <FILE id="muwSCD" name="IIRFilterCascade.h" compile="0" resource="0"
-            file="Source/IIRFilterCascade.h"/>
-      <FILE id="eDeCsH" name="LRFilterBankProcessor.cpp" compile="1" resource="0"
-            file="Source/LRFilterBankProcessor.cpp"/>
-      <FILE id="DLVeuy" name="LRFilterBankProcessor.h" compile="0" resource="0"
-            file="Source/LRFilterBankProcessor.h"/>
+      <FILE id="tG1QrY" name="IIRFilterCascadeProcessor.cpp" compile="1"
+            resource="0" file="Source/IIRFilterCascadeProcessor.cpp"/>
+      <FILE id="muwSCD" name="IIRFilterCascadeProcessor.h" compile="0" resource="0"
+            file="Source/IIRFilterCascadeProcessor.h"/>
       <FILE id="OBrItm" name="GainProcessor.cpp" compile="1" resource="0"
             file="Source/GainProcessor.cpp"/>
       <FILE id="V3rXPf" name="GainProcessor.h" compile="0" resource="0" file="Source/GainProcessor.h"/>

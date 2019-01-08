@@ -14,7 +14,9 @@ GainProcessor::GainProcessor()
 {
     gain.setGainDecibels (0.0f);
 }
-
+GainProcessor::~GainProcessor()
+{
+}
 const String GainProcessor::getName() const
 {
     return "Gain";

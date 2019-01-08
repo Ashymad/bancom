@@ -16,6 +16,7 @@ class GainProcessor  : public ProcessorBase
 {
     public:
 	GainProcessor();
+	~GainProcessor();
 	const String getName() const override;
 	void prepareToPlay (double sampleRate, int samplesPerBlock) override;
 	void processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages) override;

@@ -101,7 +101,7 @@ void BancomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
 	    getMainBusNumOutputChannels(),
 	    sampleRate, samplesPerBlock);
     mainProcessor->prepareToPlay (sampleRate, samplesPerBlock);
-    initialiseGraph();
+    initialiseGraph(sampleRate);
 }
 
 void BancomAudioProcessor::releaseResources()
@@ -130,10 +130,37 @@ void BancomAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer&
 {
     for (int i = getTotalNumInputChannels(); i < getTotalNumOutputChannels(); ++i)
 	buffer.clear (i, 0, buffer.getNumSamples());
-    updateGraph();
     mainProcessor->processBlock (buffer, midiMessages);
 }
 
+
+void BancomAudioProcessor::initialiseGraph(double sampleRate)
+{
+    mainProcessor->clear();
+
+    audioInputNode  = mainProcessor->addNode (new AudioGraphIOProcessor (AudioGraphIOProcessor::audioInputNode));
+    audioOutputNode = mainProcessor->addNode (new AudioGraphIOProcessor (AudioGraphIOProcessor::audioOutputNode));
+    
+    Array<float> frequencies = Array<float>(1000.0f, 2000.0f);
+
+    OwnedArray<IIRFilterCascadeProcessor> filterBank = designLRFilterBank(frequencies, sampleRate, 4);
+
+    filterNodes = Array<Node::Ptr>();
+
+    for (IIRFilterCascadeProcessor* processor : filterBank)
+    {
+	filterNodes.add(mainProcessor->addNode(processor));
+    }
+
+    for (int channel = 0; channel < 2; ++channel)
+    {
+	for (Node::Ptr& filterNode : filterNodes)
+	{
+	    mainProcessor->addConnection({ { audioInputNode->nodeID,  channel }, { filterNode->nodeID, channel } });
+	    mainProcessor->addConnection({ { filterNode->nodeID, channel}, { audioOutputNode->nodeID, channel } });
+	}
+    }
+}
 //==============================================================================
 bool BancomAudioProcessor::hasEditor() const
 {

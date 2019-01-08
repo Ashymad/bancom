@@ -13,10 +13,9 @@
 #include "IIRFilterCascadeProcessor.h"
 
 template<typename FloatType>
-ReferenceCountedArray<IIRCoefficients> designIIRLowpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order);
+ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> designIIRLowpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order);
 
 template<typename FloatType>
-ReferenceCountedArray<IIRCoefficients> designIIRHighpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order);
+ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> designIIRHighpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order);
 
-template<typename FloatType>
-ReferenceCountedArray<IIRFilterCascadeProcessor> designLRFilterBank(Array<FloatType> frequencies);
+OwnedArray<IIRFilterCascadeProcessor> designLRFilterBank(Array<float>& frequencies, double sampleRate, int order);

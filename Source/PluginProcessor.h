@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include "helpers.h"
 
 using AudioGraphIOProcessor = AudioProcessorGraph::AudioGraphIOProcessor;
 using Node = AudioProcessorGraph::Node;
@@ -54,6 +54,9 @@ class BancomAudioProcessor  : public AudioProcessor
 	const String getProgramName (int index) override;
 	void changeProgramName (int index, const String& newName) override;
 
+	//=============================================================================
+	void initialiseGraph(double sampleRate);
+
 	//==============================================================================
 	void getStateInformation (MemoryBlock& destData) override;
 	void setStateInformation (const void* data, int sizeInBytes) override;
@@ -63,6 +66,7 @@ class BancomAudioProcessor  : public AudioProcessor
 
 	Node::Ptr audioInputNode;
 	Node::Ptr audioOutputNode;
+	Array<Node::Ptr> filterNodes;
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BancomAudioProcessor)
 };

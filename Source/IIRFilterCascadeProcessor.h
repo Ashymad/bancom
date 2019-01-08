@@ -10,18 +10,20 @@
 
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include "ProcessorBase.h"
 
-class IIRFilterCascade
+class IIRFilterCascadeProcessor : public ProcessorBase
 {
     public:
-	IIRFilterCascade();
+	IIRFilterCascadeProcessor();
 	void addFilter(IIRFilter& filter);
+	void addFilter(Array<IIRFilter>& filters);
 	void addFilterFromCoefficients(IIRCoefficients& coefficients);
 	void addFilterFromCoefficients(ReferenceCountedArray<IIRCoefficients> coefficients);
-	void processSamples(float* samples, int numSamples) noexcept;
-	float processSingleSampleRaw(float sample) noexcept;
-	void reset();
+	const String getName() const override;
+	void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+	void processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages) override;
+	void reset() override;
     private:
 	Array<IIRFilter> cascade;
 };

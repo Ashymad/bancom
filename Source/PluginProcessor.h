@@ -12,6 +12,9 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
+using AudioGraphIOProcessor = AudioProcessorGraph::AudioGraphIOProcessor;
+using Node = AudioProcessorGraph::Node;
+
 //==============================================================================
 /**
 */
@@ -56,6 +59,10 @@ class BancomAudioProcessor  : public AudioProcessor
 	void setStateInformation (const void* data, int sizeInBytes) override;
 
     private:
+	std::unique_ptr<AudioProcessorGraph> mainProcessor;
+
+	Node::Ptr audioInputNode;
+	Node::Ptr audioOutputNode;
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BancomAudioProcessor)
 };

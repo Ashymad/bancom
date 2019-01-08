@@ -57,6 +57,11 @@ void LRFilterBankProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     A2_L.processSamples(buffers[2].getWritePointer(0), numSamples);
     A2_H.processSamples(buffers[3].getWritePointer(0), numSamples);
 
+    if (buffer.getNumChannels() < 3)
+    {
+	buffer.setSize(3, numSamples);
+    }
+
     buffer.copyFrom(0, 0, buffers[0], 0, 0, numSamples);
     buffer.copyFrom(1, 0, buffers[1], 0, 0, numSamples);
     buffer.copyFrom(2, 0, buffers[2], 0, 0, numSamples);

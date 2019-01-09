@@ -91,11 +91,19 @@ void BancomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
 	    getMainBusNumOutputChannels(),
 	    sampleRate, samplesPerBlock);
     
-    Array<float> frequencies = Array<float>(1000.0f, 4000.0f);
-    filterBank = designLRFilterBank(frequencies, sampleRate, 4);
+    Array<float> frequencies = Array<float>(250.0f);
     initialiseGraph();
-    mainProcessor->prepareToPlay (sampleRate, samplesPerBlock);
+    initialiseFilters(frequencies, sampleRate);
+    prepareGraph(sampleRate, samplesPerBlock);
     connectNodes();
+}
+
+void BancomAudioProcessor::prepareGraph (double sampleRate, int samplesPerBlock)
+{
+    sampleRate = sampleRate == 0 ? getSampleRate() : sampleRate;
+    samplesPerBlock = samplesPerBlock == 0 ? getBlockSize() : samplesPerBlock;
+
+    mainProcessor->prepareToPlay(sampleRate, samplesPerBlock);
 }
 
 void BancomAudioProcessor::releaseResources()
@@ -127,20 +135,50 @@ void BancomAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer&
     mainProcessor->processBlock (buffer, midiMessages);
 }
 
+void BancomAudioProcessor::initialiseFilters(Array<float>& frequencies, float sampleRate)
+{
+    sampleRate = sampleRate == 0 ? getSampleRate() : sampleRate;
+
+    for (Node::Ptr filterNode : filterNodes){
+	mainProcessor->removeNode(filterNode->nodeID);
+    }
+
+    filterNodes.clear();
+
+    auto filterBank = designLRFilterBank(frequencies, sampleRate, 4);
+
+    while (filterBank.size() > 0)
+    {
+	filterNodes.add(mainProcessor->addNode(filterBank.removeAndReturn(filterBank.size() - 1)));
+    }
+
+    while (filterNodes.size() > gainNodes.size())
+    {
+	gainNodes.add(mainProcessor->addNode(new GainProcessor()));
+    }
+    while (filterNodes.size() < gainNodes.size())
+    {
+	mainProcessor->removeNode(gainNodes.removeAndReturn(gainNodes.size()-1)->nodeID);
+    }
+
+    DBG("Filter bank designed");
+    DBG(gainNodes.size());
+}
+
 void BancomAudioProcessor::initialiseGraph()
 {
     mainProcessor->clear();
 
     audioInputNode  = mainProcessor->addNode (new AudioGraphIOProcessor (AudioGraphIOProcessor::audioInputNode));
     audioOutputNode = mainProcessor->addNode (new AudioGraphIOProcessor (AudioGraphIOProcessor::audioOutputNode));
-
-    while (filterBank.size() > 0){
-	filterNodes.add(mainProcessor->addNode(filterBank.removeAndReturn(filterBank.size() - 1)));
-	gainNodes.add(mainProcessor->addNode(new GainProcessor()));
-    }
 }
+
 void BancomAudioProcessor::connectNodes()
 {
+    for (AudioProcessorGraph::Connection& connection : mainProcessor->getConnections())
+    {
+	mainProcessor->removeConnection(connection);
+    }
     for (int channel = 0; channel < 2; ++channel)
     {
 	for (int node = 0; node < filterNodes.size(); ++node)
@@ -155,8 +193,10 @@ void BancomAudioProcessor::connectNodes()
 
 void BancomAudioProcessor::setGainOnFilter(unsigned int filterNumber, float newGainDecibels)
 {
-    GainProcessor* gainProcessor = dynamic_cast<GainProcessor*>(gainNodes[filterNumber]->getProcessor());
-    gainProcessor->setGainDecibels(newGainDecibels);
+    if (filterNumber < gainNodes.size()){
+	GainProcessor* gainProcessor = dynamic_cast<GainProcessor*>(gainNodes[filterNumber]->getProcessor());
+	gainProcessor->setGainDecibels(newGainDecibels);
+    }
 }
 
 //==============================================================================

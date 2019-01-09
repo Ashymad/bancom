@@ -58,6 +58,9 @@ class BancomAudioProcessor  : public AudioProcessor
 	//=============================================================================
 	void initialiseGraph();
 	void connectNodes();
+	void initialiseFilters(Array<float>& frequencies, float sampleRate = 0);
+	void prepareGraph (double sampleRate = 0, int samplesPerBlock = 0);
+
 
 	//=============================================================================
 	void setGainOnFilter(unsigned int filterNumber, float newGainDecibels);
@@ -72,7 +75,6 @@ class BancomAudioProcessor  : public AudioProcessor
 	Node::Ptr audioInputNode;
 	Node::Ptr audioOutputNode;
 
-	OwnedArray<IIRFilterCascadeProcessor> filterBank;
 	Array<Node::Ptr> filterNodes;
 	Array<Node::Ptr> gainNodes;
 

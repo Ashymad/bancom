@@ -16,7 +16,7 @@
 //==============================================================================
 /**
 */
-class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::Listener
+class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::Listener, public Button::Listener
 {
     public:
 	BancomAudioProcessorEditor (BancomAudioProcessor&);
@@ -26,6 +26,9 @@ class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::
 	void paint (Graphics&) override;
 	void resized() override;
 	void sliderValueChanged (Slider* slider) override;
+	void buttonClicked (Button* button) override;
+	void addGainSlider();
+	void addFrequencySlider();
 
     private:
 	// This reference is provided as a quick way for your editor to
@@ -33,6 +36,11 @@ class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::
 	BancomAudioProcessor& processor;
 
 	OwnedArray<Slider> gainSliders;
+	OwnedArray<Slider> frequencySliders;
+
+	TextButton addCrossoverButton;
+	TextButton removeCrossoverButton;
+	TextButton applyButton;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BancomAudioProcessorEditor)
 };

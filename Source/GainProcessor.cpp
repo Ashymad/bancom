@@ -25,9 +25,14 @@ const String GainProcessor::getName() const
 void GainProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     setRateAndBufferSizeDetails(sampleRate, samplesPerBlock);
-    gain.setGainDecibels (-3.0f);
+    gain.setGainDecibels (0.0f);
     dsp::ProcessSpec spec { sampleRate, static_cast<uint32> (samplesPerBlock), 2 };
     gain.prepare (spec);
+}
+
+void GainProcessor::setGainDecibels(float newGainDecibels)
+{
+    gain.setGainDecibels(newGainDecibels);
 }
 
 void GainProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)

@@ -23,7 +23,9 @@ BancomAudioProcessor::BancomAudioProcessor() :
 #endif
 	    ),
 #endif
-    mainProcessor(new AudioProcessorGraph())
+    mainProcessor(new AudioProcessorGraph()),
+    filterNodes(Array<Node::Ptr>()),
+    gainNodes(Array<Node::Ptr>())
 {
 }
 
@@ -89,7 +91,7 @@ void BancomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
 	    getMainBusNumOutputChannels(),
 	    sampleRate, samplesPerBlock);
     
-    Array<float> frequencies = Array<float>(1000.0f);
+    Array<float> frequencies = Array<float>(1000.0f, 4000.0f);
     filterBank = designLRFilterBank(frequencies, sampleRate, 4);
     initialiseGraph();
     mainProcessor->prepareToPlay (sampleRate, samplesPerBlock);
@@ -132,27 +134,31 @@ void BancomAudioProcessor::initialiseGraph()
     audioInputNode  = mainProcessor->addNode (new AudioGraphIOProcessor (AudioGraphIOProcessor::audioInputNode));
     audioOutputNode = mainProcessor->addNode (new AudioGraphIOProcessor (AudioGraphIOProcessor::audioOutputNode));
 
-    filterNodes = Array<Node::Ptr>();
-
-    gainNode = mainProcessor->addNode(new GainProcessor());
-
     while (filterBank.size() > 0){
 	filterNodes.add(mainProcessor->addNode(filterBank.removeAndReturn(filterBank.size() - 1)));
+	gainNodes.add(mainProcessor->addNode(new GainProcessor()));
     }
 }
 void BancomAudioProcessor::connectNodes()
 {
     for (int channel = 0; channel < 2; ++channel)
     {
-	for (Node::Ptr filterNode : filterNodes)
+	for (int node = 0; node < filterNodes.size(); ++node)
 	{
-	    mainProcessor->addConnection({ { audioInputNode->nodeID,  channel }, { filterNode->nodeID, channel } });
-	    mainProcessor->addConnection({ { filterNode->nodeID, channel}, { gainNode->nodeID, channel } });
+	    mainProcessor->addConnection({ { audioInputNode->nodeID,  channel }, { filterNodes[node]->nodeID, channel } });
+	    mainProcessor->addConnection({ { filterNodes[node]->nodeID, channel}, { gainNodes[node]->nodeID, channel } });
+	    mainProcessor->addConnection({ { gainNodes[node]->nodeID, channel}, { audioOutputNode->nodeID, channel } });
 	}
-	mainProcessor->addConnection({ { gainNode->nodeID, channel}, { audioOutputNode->nodeID, channel } });
     }
 
 }
+
+void BancomAudioProcessor::setGainOnFilter(unsigned int filterNumber, float newGainDecibels)
+{
+    GainProcessor* gainProcessor = dynamic_cast<GainProcessor*>(gainNodes[filterNumber]->getProcessor());
+    gainProcessor->setGainDecibels(newGainDecibels);
+}
+
 //==============================================================================
 bool BancomAudioProcessor::hasEditor() const
 {

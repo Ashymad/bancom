@@ -16,7 +16,7 @@
 //==============================================================================
 /**
 */
-class BancomAudioProcessorEditor  : public AudioProcessorEditor
+class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::Listener
 {
     public:
 	BancomAudioProcessorEditor (BancomAudioProcessor&);
@@ -25,11 +25,14 @@ class BancomAudioProcessorEditor  : public AudioProcessorEditor
 	//==============================================================================
 	void paint (Graphics&) override;
 	void resized() override;
+	void sliderValueChanged (Slider* slider) override;
 
     private:
 	// This reference is provided as a quick way for your editor to
 	// access the processor object that created it.
 	BancomAudioProcessor& processor;
+
+	OwnedArray<Slider> gainSliders;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BancomAudioProcessorEditor)
 };

@@ -20,6 +20,7 @@ class GainProcessor  : public ProcessorBase
 	const String getName() const override;
 	void prepareToPlay (double sampleRate, int samplesPerBlock) override;
 	void processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages) override;
+	void setGainDecibels(float newGainDecibels);
 	void reset() override;
     private:
 	dsp::Gain<float> gain;

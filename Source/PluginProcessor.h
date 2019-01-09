@@ -59,6 +59,9 @@ class BancomAudioProcessor  : public AudioProcessor
 	void initialiseGraph();
 	void connectNodes();
 
+	//=============================================================================
+	void setGainOnFilter(unsigned int filterNumber, float newGainDecibels);
+
 	//==============================================================================
 	void getStateInformation (MemoryBlock& destData) override;
 	void setStateInformation (const void* data, int sizeInBytes) override;
@@ -68,11 +71,11 @@ class BancomAudioProcessor  : public AudioProcessor
 
 	Node::Ptr audioInputNode;
 	Node::Ptr audioOutputNode;
-	
-	Node::Ptr gainNode;
 
 	OwnedArray<IIRFilterCascadeProcessor> filterBank;
 	Array<Node::Ptr> filterNodes;
+	Array<Node::Ptr> gainNodes;
+
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BancomAudioProcessor)
 };

@@ -46,18 +46,13 @@ OwnedArray<IIRFilterCascadeProcessor> designLRFilterBank(Array<float>& frequenci
 	filterBank.add(new IIRFilterCascadeProcessor());
     }
     
-    std::stringstream ss;
-
     for (int processor = 0; processor <= crosses; ++processor)
     {
 	for (int filter = 0; filter < crosses; ++filter)
 	{
 	    filterBank[processor]->addFilterFromCoefficients(processor > filter ? *LPs[filter] : *HPs[filter]);
-	    ss << (processor > filter ? "L" : "H") << filter + 1 << "->";
 	}
-	ss << "O" << std::endl;
     }
 
-    DBG(ss.str());
     return filterBank;
 }

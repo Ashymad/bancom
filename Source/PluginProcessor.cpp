@@ -40,29 +40,17 @@ const String BancomAudioProcessor::getName() const
 
 bool BancomAudioProcessor::acceptsMidi() const
 {
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
     return false;
-#endif
 }
 
 bool BancomAudioProcessor::producesMidi() const
 {
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
     return false;
-#endif
 }
 
 bool BancomAudioProcessor::isMidiEffect() const
 {
-#if JucePlugin_IsMidiEffect
-    return true;
-#else
     return false;
-#endif
 }
 
 double BancomAudioProcessor::getTailLengthSeconds() const
@@ -100,8 +88,12 @@ void BancomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     mainProcessor->setPlayConfigDetails (getMainBusNumInputChannels(),
 	    getMainBusNumOutputChannels(),
 	    sampleRate, samplesPerBlock);
+    
+    Array<float> frequencies = Array<float>(1000.0f);
+    filterBank = designLRFilterBank(frequencies, sampleRate, 4);
+    initialiseGraph();
     mainProcessor->prepareToPlay (sampleRate, samplesPerBlock);
-    initialiseGraph(sampleRate);
+    connectNodes();
 }
 
 void BancomAudioProcessor::releaseResources()
@@ -133,33 +125,34 @@ void BancomAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer&
     mainProcessor->processBlock (buffer, midiMessages);
 }
 
-
-void BancomAudioProcessor::initialiseGraph(double sampleRate)
+void BancomAudioProcessor::initialiseGraph()
 {
     mainProcessor->clear();
 
     audioInputNode  = mainProcessor->addNode (new AudioGraphIOProcessor (AudioGraphIOProcessor::audioInputNode));
     audioOutputNode = mainProcessor->addNode (new AudioGraphIOProcessor (AudioGraphIOProcessor::audioOutputNode));
-    
-    Array<float> frequencies = Array<float>(1000.0f, 2000.0f);
-
-    OwnedArray<IIRFilterCascadeProcessor> filterBank = designLRFilterBank(frequencies, sampleRate, 4);
 
     filterNodes = Array<Node::Ptr>();
 
+    gainNode = mainProcessor->addNode(new GainProcessor());
+
     for (IIRFilterCascadeProcessor* processor : filterBank)
     {
-	filterNodes.add(mainProcessor->addNode(processor));
+        filterNodes.add(mainProcessor->addNode(processor));
     }
-
+}
+void BancomAudioProcessor::connectNodes()
+{
     for (int channel = 0; channel < 2; ++channel)
     {
-	for (Node::Ptr& filterNode : filterNodes)
+	for (Node::Ptr filterNode : filterNodes)
 	{
 	    mainProcessor->addConnection({ { audioInputNode->nodeID,  channel }, { filterNode->nodeID, channel } });
-	    mainProcessor->addConnection({ { filterNode->nodeID, channel}, { audioOutputNode->nodeID, channel } });
+	    mainProcessor->addConnection({ { filterNode->nodeID, channel}, { gainNode->nodeID, channel } });
 	}
+	mainProcessor->addConnection({ { gainNode->nodeID, channel}, { audioOutputNode->nodeID, channel } });
     }
+
 }
 //==============================================================================
 bool BancomAudioProcessor::hasEditor() const

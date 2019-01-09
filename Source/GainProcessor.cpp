@@ -12,7 +12,7 @@
 
 GainProcessor::GainProcessor()
 {
-    gain.setGainDecibels (0.0f);
+    setPlayConfigDetails(2, 2, getSampleRate(), getBlockSize());
 }
 GainProcessor::~GainProcessor()
 {
@@ -24,6 +24,8 @@ const String GainProcessor::getName() const
 
 void GainProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    setRateAndBufferSizeDetails(sampleRate, samplesPerBlock);
+    gain.setGainDecibels (-3.0f);
     dsp::ProcessSpec spec { sampleRate, static_cast<uint32> (samplesPerBlock), 2 };
     gain.prepare (spec);
 }

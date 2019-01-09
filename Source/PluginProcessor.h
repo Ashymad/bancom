@@ -11,6 +11,7 @@
 #pragma once
 
 #include "helpers.h"
+#include "GainProcessor.h"
 
 using AudioGraphIOProcessor = AudioProcessorGraph::AudioGraphIOProcessor;
 using Node = AudioProcessorGraph::Node;
@@ -55,7 +56,8 @@ class BancomAudioProcessor  : public AudioProcessor
 	void changeProgramName (int index, const String& newName) override;
 
 	//=============================================================================
-	void initialiseGraph(double sampleRate);
+	void initialiseGraph();
+	void connectNodes();
 
 	//==============================================================================
 	void getStateInformation (MemoryBlock& destData) override;
@@ -66,6 +68,10 @@ class BancomAudioProcessor  : public AudioProcessor
 
 	Node::Ptr audioInputNode;
 	Node::Ptr audioOutputNode;
+	
+	Node::Ptr gainNode;
+
+	OwnedArray<IIRFilterCascadeProcessor> filterBank;
 	Array<Node::Ptr> filterNodes;
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BancomAudioProcessor)

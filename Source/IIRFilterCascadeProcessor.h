@@ -17,7 +17,7 @@ class IIRFilterCascadeProcessor : public ProcessorBase
     public:
 	IIRFilterCascadeProcessor();
 	~IIRFilterCascadeProcessor();
-	void addFilter(dsp::IIR::Filter<float>& filter);
+	void addFilter(dsp::IIR::Filter<float>* filter);
 	void addFilterFromCoefficients(dsp::IIR::Coefficients<float>::Ptr coefficients);
 	void addFilterFromCoefficients(ReferenceCountedArray<dsp::IIR::Coefficients<float>>& coefficients);
 	const String getName() const override;

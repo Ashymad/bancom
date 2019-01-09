@@ -13,6 +13,7 @@
 IIRFilterCascadeProcessor::IIRFilterCascadeProcessor() :
     cascade(OwnedArray<dsp::IIR::Filter<float>>())
 {
+    setPlayConfigDetails(2, 2, getSampleRate(), getBlockSize());
 }
 
 IIRFilterCascadeProcessor::~IIRFilterCascadeProcessor()
@@ -20,17 +21,17 @@ IIRFilterCascadeProcessor::~IIRFilterCascadeProcessor()
 }
 void IIRFilterCascadeProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
+    setRateAndBufferSizeDetails(sampleRate, samplesPerBlock);
     spec = { sampleRate, static_cast<uint32> (samplesPerBlock), 2 };
 }
-void IIRFilterCascadeProcessor::addFilter(dsp::IIR::Filter<float>& filter)
+void IIRFilterCascadeProcessor::addFilter(dsp::IIR::Filter<float>* filter)
 {
-    cascade.add(&filter);
+    filter->prepare(spec);
+    cascade.add(filter);
 }
 void IIRFilterCascadeProcessor::addFilterFromCoefficients(dsp::IIR::Coefficients<float>::Ptr coefficients)
 {
-    dsp::IIR::Filter<float>*filter = new dsp::IIR::Filter<float>(coefficients);
-    filter->prepare(spec);
-    cascade.add(filter);
+    addFilter(new dsp::IIR::Filter<float>(coefficients));
 }
 void IIRFilterCascadeProcessor::addFilterFromCoefficients(ReferenceCountedArray<dsp::IIR::Coefficients<float>>& coefficients)
 {

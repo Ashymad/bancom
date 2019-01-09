@@ -39,20 +39,25 @@ OwnedArray<IIRFilterCascadeProcessor> designLRFilterBank(Array<float>& frequenci
 
     frequencies.sort();
     
-    for (float frequency : frequencies)
+    for (int i = frequencies.size() - 1; i >= 0; --i)
     {
-	LPs.add(new ReferenceCountedArray<dsp::IIR::Coefficients<float>>(designIIRLowpassHighOrderLRMethod(frequency, sampleRate, order)));
-	HPs.add(new ReferenceCountedArray<dsp::IIR::Coefficients<float>>(designIIRHighpassHighOrderLRMethod(frequency, sampleRate, order)));
+	LPs.add(new ReferenceCountedArray<dsp::IIR::Coefficients<float>>(designIIRLowpassHighOrderLRMethod(frequencies[i], sampleRate, order)));
+	HPs.add(new ReferenceCountedArray<dsp::IIR::Coefficients<float>>(designIIRHighpassHighOrderLRMethod(frequencies[i], sampleRate, order)));
 	filterBank.add(new IIRFilterCascadeProcessor());
     }
     
+    std::stringstream ss;
+
     for (int processor = 0; processor <= crosses; ++processor)
     {
 	for (int filter = 0; filter < crosses; ++filter)
 	{
 	    filterBank[processor]->addFilterFromCoefficients(processor > filter ? *LPs[filter] : *HPs[filter]);
+	    ss << (processor > filter ? "L" : "H") << filter + 1 << "->";
 	}
+	ss << "O" << std::endl;
     }
 
+    DBG(ss.str());
     return filterBank;
 }

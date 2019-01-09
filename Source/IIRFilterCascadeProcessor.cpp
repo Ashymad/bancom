@@ -11,7 +11,7 @@
 #include "IIRFilterCascadeProcessor.h"
 
 IIRFilterCascadeProcessor::IIRFilterCascadeProcessor() :
-    cascade(OwnedArray<dsp::IIR::Filter<float>>())
+    cascade(OwnedArray<Filter>())
 {
     setPlayConfigDetails(2, 2, getSampleRate(), getBlockSize());
 }
@@ -22,27 +22,27 @@ IIRFilterCascadeProcessor::~IIRFilterCascadeProcessor()
 void IIRFilterCascadeProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     setRateAndBufferSizeDetails(sampleRate, samplesPerBlock);
-    spec = { sampleRate, static_cast<uint32> (samplesPerBlock), 2 };
+    dsp::ProcessSpec spec = { sampleRate, static_cast<uint32> (samplesPerBlock), 2 };
+    for (Filter* filter : cascade)
+    {
+	filter->prepare(spec);
+    }
 }
-void IIRFilterCascadeProcessor::addFilter(dsp::IIR::Filter<float>* filter)
+void IIRFilterCascadeProcessor::addFilterFromCoefficients(Coefficients::Ptr coefficients)
 {
-    filter->prepare(spec);
+    Filter* filter = new Filter(coefficients);
     cascade.add(filter);
 }
-void IIRFilterCascadeProcessor::addFilterFromCoefficients(dsp::IIR::Coefficients<float>::Ptr coefficients)
+void IIRFilterCascadeProcessor::addFilterFromCoefficients(ReferenceCountedArray<Coefficients>& coefficients)
 {
-    addFilter(new dsp::IIR::Filter<float>(coefficients));
-}
-void IIRFilterCascadeProcessor::addFilterFromCoefficients(ReferenceCountedArray<dsp::IIR::Coefficients<float>>& coefficients)
-{
-    for (dsp::IIR::Coefficients<float>::Ptr coeffs : coefficients)
+    for (Coefficients::Ptr coeffs : coefficients)
     {
 	addFilterFromCoefficients(coeffs);
     }
 }
 void IIRFilterCascadeProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    for (dsp::IIR::Filter<float>* filter : cascade)
+    for (Filter* filter : cascade)
     {
 	dsp::AudioBlock<float> block (buffer);
 	dsp::ProcessContextReplacing<float> context (block);
@@ -55,7 +55,7 @@ const String IIRFilterCascadeProcessor::getName() const
 }
 void IIRFilterCascadeProcessor::reset()
 {
-    for (dsp::IIR::Filter<float>* filter : cascade)
+    for (Filter* filter : cascade)
     {
 	filter->reset();
     }

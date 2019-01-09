@@ -11,20 +11,20 @@
 #pragma once
 
 #include "ProcessorBase.h"
+using Coefficients = dsp::IIR::Coefficients<float>;
+using Filter = dsp::ProcessorDuplicator<dsp::IIR::Filter<float>, Coefficients>;
 
 class IIRFilterCascadeProcessor : public ProcessorBase
 {
     public:
 	IIRFilterCascadeProcessor();
 	~IIRFilterCascadeProcessor();
-	void addFilter(dsp::IIR::Filter<float>* filter);
-	void addFilterFromCoefficients(dsp::IIR::Coefficients<float>::Ptr coefficients);
-	void addFilterFromCoefficients(ReferenceCountedArray<dsp::IIR::Coefficients<float>>& coefficients);
+	void addFilterFromCoefficients(Coefficients::Ptr coefficients);
+	void addFilterFromCoefficients(ReferenceCountedArray<Coefficients>& coefficients);
 	const String getName() const override;
 	void prepareToPlay (double sampleRate, int samplesPerBlock) override;
 	void processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages) override;
 	void reset() override;
     private:
-	OwnedArray<dsp::IIR::Filter<float>> cascade;
-	dsp::ProcessSpec spec;
+	OwnedArray<Filter> cascade;
 };

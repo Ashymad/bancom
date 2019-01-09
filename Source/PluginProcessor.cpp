@@ -136,9 +136,8 @@ void BancomAudioProcessor::initialiseGraph()
 
     gainNode = mainProcessor->addNode(new GainProcessor());
 
-    for (IIRFilterCascadeProcessor* processor : filterBank)
-    {
-        filterNodes.add(mainProcessor->addNode(processor));
+    while (filterBank.size() > 0){
+	filterNodes.add(mainProcessor->addNode(filterBank.removeAndReturn(filterBank.size() - 1)));
     }
 }
 void BancomAudioProcessor::connectNodes()

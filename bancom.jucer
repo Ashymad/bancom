@@ -5,6 +5,10 @@
               pluginManufacturer="5hy" aaxIdentifier="men.5hy.bancom">
   <MAINGROUP id="WN204n" name="bancom">
     <GROUP id="{E8397F12-EA48-045A-8291-C5C9AF8D6CA4}" name="Source">
+      <FILE id="LQ9UMk" name="CompressorProcessor.cpp" compile="1" resource="0"
+            file="Source/CompressorProcessor.cpp"/>
+      <FILE id="VoGoTy" name="CompressorProcessor.h" compile="0" resource="0"
+            file="Source/CompressorProcessor.h"/>
       <FILE id="tG1QrY" name="IIRFilterCascadeProcessor.cpp" compile="1"
             resource="0" file="Source/IIRFilterCascadeProcessor.cpp"/>
       <FILE id="muwSCD" name="IIRFilterCascadeProcessor.h" compile="0" resource="0"

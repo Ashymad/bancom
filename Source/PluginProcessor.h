@@ -59,11 +59,12 @@ class BancomAudioProcessor  : public AudioProcessor
 	//=============================================================================
 	void initialiseGraph();
 	void connectNodes();
-	void initialiseFilters(Array<float>& frequencies, float sampleRate = 0);
+	void initialiseFilters(float sampleRate = 0);
 	void prepareGraph (double sampleRate = 0, int samplesPerBlock = 0);
 
 	//=============================================================================
 	void setGainOnFilter(unsigned int filterNumber, float newGainDecibels);
+	void setFrequencies(const Array<float>& frequencies);
 
 	//==============================================================================
 	void getStateInformation (MemoryBlock& destData) override;

@@ -39,6 +39,8 @@ BancomAudioProcessorEditor::BancomAudioProcessorEditor (BancomAudioProcessor& p)
     applyButton.addListener(this);
     addAndMakeVisible(applyButton);
 
+    processor.setFrequencies(Array<float>(125.0f));
+
     setSize (400, 300);
 }
 
@@ -111,9 +113,9 @@ void BancomAudioProcessorEditor::buttonClicked(Button* button)
 	for (Slider* slider : frequencySliders){
 	    frequencies.add(slider->getValue());
 	}
+	processor.setFrequencies(frequencies);
+	processor.initialiseFilters();
 	processor.prepareGraph();
-	processor.initialiseGraph();
-	processor.initialiseFilters(frequencies);
 	processor.connectNodes();
     }
 }

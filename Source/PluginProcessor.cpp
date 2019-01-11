@@ -27,8 +27,9 @@ BancomAudioProcessor::BancomAudioProcessor() :
     filterNodes(Array<Node::Ptr>()),
     gainNodes(Array<Node::Ptr>()),
     compressorNodes(Array<Node::Ptr>()),
-    frequencies(Array<float>(250.0f))
+    frequencies(Array<float>())
 {
+    initialiseGraph();
 }
 
 BancomAudioProcessor::~BancomAudioProcessor()
@@ -93,9 +94,8 @@ void BancomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
 	    getMainBusNumOutputChannels(),
 	    sampleRate, samplesPerBlock);
     
+    initialiseFilters(sampleRate);
     prepareGraph(sampleRate, samplesPerBlock);
-    initialiseGraph();
-    initialiseFilters(frequencies, sampleRate);
     connectNodes();
 }
 
@@ -136,7 +136,7 @@ void BancomAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer&
     mainProcessor->processBlock (buffer, midiMessages);
 }
 
-void BancomAudioProcessor::initialiseFilters(Array<float>& frequencies, float sampleRate)
+void BancomAudioProcessor::initialiseFilters(float sampleRate)
 {
     sampleRate = sampleRate == 0 ? getSampleRate() : sampleRate;
 
@@ -145,8 +145,6 @@ void BancomAudioProcessor::initialiseFilters(Array<float>& frequencies, float sa
     }
 
     filterNodes.clear();
-    gainNodes.clear();
-    compressorNodes.clear();
 
     auto filterBank = designLRFilterBank(frequencies, sampleRate, 4);
 
@@ -165,13 +163,19 @@ void BancomAudioProcessor::initialiseFilters(Array<float>& frequencies, float sa
 	mainProcessor->removeNode(gainNodes.removeAndReturn(gainNodes.size()-1)->nodeID);
 	mainProcessor->removeNode(compressorNodes.removeAndReturn(compressorNodes.size()-1)->nodeID);
     }
+}
 
+void BancomAudioProcessor::setFrequencies(const Array<float>& frequencies)
+{
     this->frequencies = frequencies;
 }
 
 void BancomAudioProcessor::initialiseGraph()
 {
     mainProcessor->clear();
+    filterNodes.clear();
+    gainNodes.clear();
+    compressorNodes.clear();
 
     audioInputNode  = mainProcessor->addNode (new AudioGraphIOProcessor (AudioGraphIOProcessor::audioInputNode));
     audioOutputNode = mainProcessor->addNode (new AudioGraphIOProcessor (AudioGraphIOProcessor::audioOutputNode));

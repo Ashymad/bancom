@@ -12,6 +12,7 @@
 
 #include "helpers.h"
 #include "GainProcessor.h"
+#include "CompressorProcessor.h"
 
 using AudioGraphIOProcessor = AudioProcessorGraph::AudioGraphIOProcessor;
 using Node = AudioProcessorGraph::Node;
@@ -61,7 +62,6 @@ class BancomAudioProcessor  : public AudioProcessor
 	void initialiseFilters(Array<float>& frequencies, float sampleRate = 0);
 	void prepareGraph (double sampleRate = 0, int samplesPerBlock = 0);
 
-
 	//=============================================================================
 	void setGainOnFilter(unsigned int filterNumber, float newGainDecibels);
 
@@ -69,14 +69,19 @@ class BancomAudioProcessor  : public AudioProcessor
 	void getStateInformation (MemoryBlock& destData) override;
 	void setStateInformation (const void* data, int sizeInBytes) override;
 
+	//=============================================================================
+	void reset() override;
     private:
 	std::unique_ptr<AudioProcessorGraph> mainProcessor;
 
 	Node::Ptr audioInputNode;
 	Node::Ptr audioOutputNode;
 
+	Array<float> frequencies;
+
 	Array<Node::Ptr> filterNodes;
 	Array<Node::Ptr> gainNodes;
+	Array<Node::Ptr> compressorNodes;
 
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BancomAudioProcessor)

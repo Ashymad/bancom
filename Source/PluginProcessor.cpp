@@ -25,7 +25,9 @@ BancomAudioProcessor::BancomAudioProcessor() :
 #endif
     mainProcessor(new AudioProcessorGraph()),
     filterNodes(Array<Node::Ptr>()),
-    gainNodes(Array<Node::Ptr>())
+    gainNodes(Array<Node::Ptr>()),
+    compressorNodes(Array<Node::Ptr>()),
+    frequencies(Array<float>(250.0f))
 {
 }
 
@@ -91,10 +93,9 @@ void BancomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
 	    getMainBusNumOutputChannels(),
 	    sampleRate, samplesPerBlock);
     
-    Array<float> frequencies = Array<float>(250.0f);
+    prepareGraph(sampleRate, samplesPerBlock);
     initialiseGraph();
     initialiseFilters(frequencies, sampleRate);
-    prepareGraph(sampleRate, samplesPerBlock);
     connectNodes();
 }
 
@@ -144,6 +145,8 @@ void BancomAudioProcessor::initialiseFilters(Array<float>& frequencies, float sa
     }
 
     filterNodes.clear();
+    gainNodes.clear();
+    compressorNodes.clear();
 
     auto filterBank = designLRFilterBank(frequencies, sampleRate, 4);
 
@@ -155,14 +158,15 @@ void BancomAudioProcessor::initialiseFilters(Array<float>& frequencies, float sa
     while (filterNodes.size() > gainNodes.size())
     {
 	gainNodes.add(mainProcessor->addNode(new GainProcessor()));
+	compressorNodes.add(mainProcessor->addNode(new CompressorProcessor()));
     }
     while (filterNodes.size() < gainNodes.size())
     {
 	mainProcessor->removeNode(gainNodes.removeAndReturn(gainNodes.size()-1)->nodeID);
+	mainProcessor->removeNode(compressorNodes.removeAndReturn(compressorNodes.size()-1)->nodeID);
     }
 
-    DBG("Filter bank designed");
-    DBG(gainNodes.size());
+    this->frequencies = frequencies;
 }
 
 void BancomAudioProcessor::initialiseGraph()
@@ -184,7 +188,8 @@ void BancomAudioProcessor::connectNodes()
 	for (int node = 0; node < filterNodes.size(); ++node)
 	{
 	    mainProcessor->addConnection({ { audioInputNode->nodeID,  channel }, { filterNodes[node]->nodeID, channel } });
-	    mainProcessor->addConnection({ { filterNodes[node]->nodeID, channel}, { gainNodes[node]->nodeID, channel } });
+	    mainProcessor->addConnection({ { filterNodes[node]->nodeID, channel}, { compressorNodes[node]->nodeID, channel } });
+	    mainProcessor->addConnection({ { compressorNodes[node]->nodeID, channel}, { gainNodes[node]->nodeID, channel } });
 	    mainProcessor->addConnection({ { gainNodes[node]->nodeID, channel}, { audioOutputNode->nodeID, channel } });
 	}
     }
@@ -222,6 +227,11 @@ void BancomAudioProcessor::setStateInformation (const void* data, int sizeInByte
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+}
+
+void BancomAudioProcessor::reset()
+{
+    mainProcessor->reset();
 }
 
 //==============================================================================

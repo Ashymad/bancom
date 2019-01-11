@@ -111,8 +111,9 @@ void BancomAudioProcessorEditor::buttonClicked(Button* button)
 	for (Slider* slider : frequencySliders){
 	    frequencies.add(slider->getValue());
 	}
-	processor.initialiseFilters(frequencies);
 	processor.prepareGraph();
+	processor.initialiseGraph();
+	processor.initialiseFilters(frequencies);
 	processor.connectNodes();
     }
 }

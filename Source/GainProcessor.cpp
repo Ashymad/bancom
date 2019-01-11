@@ -10,9 +10,11 @@
 
 #include "GainProcessor.h"
 
-GainProcessor::GainProcessor()
+GainProcessor::GainProcessor() :
+    gain(dsp::Gain<float>())
 {
     setPlayConfigDetails(2, 2, getSampleRate(), getBlockSize());
+    gain.setGainDecibels (0.0f);
 }
 GainProcessor::~GainProcessor()
 {
@@ -25,7 +27,6 @@ const String GainProcessor::getName() const
 void GainProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     setRateAndBufferSizeDetails(sampleRate, samplesPerBlock);
-    gain.setGainDecibels (0.0f);
     dsp::ProcessSpec spec { sampleRate, static_cast<uint32> (samplesPerBlock), 2 };
     gain.prepare (spec);
 }

@@ -25,9 +25,17 @@ BancomAudioProcessorEditor::BancomAudioProcessorEditor (BancomAudioProcessor& p)
 
     for (int i = 0; i < crosses; ++i){
 	addGainSlider();
+	addRatioSlider();
+	addAttackSlider();
+	addReleaseSlider();
+	addThresholdSlider();
 	addFrequencySlider();
     }
     addGainSlider();
+    addRatioSlider();
+    addAttackSlider();
+    addReleaseSlider();
+    addThresholdSlider();
     
     addCrossoverButton.setButtonText("Add");
     addCrossoverButton.addListener(this);
@@ -41,14 +49,14 @@ BancomAudioProcessorEditor::BancomAudioProcessorEditor (BancomAudioProcessor& p)
 
     processor.setFrequencies(Array<float>(125.0f));
 
-    setSize (400, 300);
+    setSize (1230, 300);
 }
 
 void BancomAudioProcessorEditor::addGainSlider()
 {
     Slider* slider = new Slider();
-    slider->setRange(-20.0f, 20.0f);
-    slider->setValue(0, dontSendNotification);
+    slider->setRange(0.0f, 40.0f);
+    slider->setValue(0.0f, dontSendNotification);
     slider->setTextValueSuffix(" dB");
     slider->setPopupDisplayEnabled (true, false, this);
     slider->addListener(this);
@@ -66,6 +74,54 @@ void BancomAudioProcessorEditor::addFrequencySlider()
     slider->setPopupDisplayEnabled (true, false, this);
     addAndMakeVisible(slider);
     frequencySliders.add(slider);
+}
+void BancomAudioProcessorEditor::addAttackSlider()
+{
+    Slider* slider = new Slider();
+    slider->setRange(0.0f, 500.0f, 1);
+    slider->setValue(2.0f);
+    slider->setSliderStyle(Slider::SliderStyle::IncDecButtons);
+    slider->setTextValueSuffix(" ms");
+    slider->setPopupDisplayEnabled (true, false, this);
+    slider->addListener(this);
+    addAndMakeVisible(slider);
+    attackSliders.add(slider);
+}
+void BancomAudioProcessorEditor::addReleaseSlider()
+{
+    Slider* slider = new Slider();
+    slider->setRange(0.0f, 5000.0f, 10);
+    slider->setValue(100.0f);
+    slider->setSliderStyle(Slider::SliderStyle::IncDecButtons);
+    slider->setTextValueSuffix(" ms");
+    slider->setPopupDisplayEnabled (true, false, this);
+    slider->addListener(this);
+    addAndMakeVisible(slider);
+    releaseSliders.add(slider);
+}
+void BancomAudioProcessorEditor::addRatioSlider()
+{
+    Slider* slider = new Slider();
+    slider->setRange(1.0f, 90.0f);
+    slider->setSkewFactor(0.5f);
+    slider->setValue(1.0f, dontSendNotification);
+    slider->setTextValueSuffix(":1");
+    slider->setPopupDisplayEnabled (true, false, this);
+    slider->addListener(this);
+    addAndMakeVisible(slider);
+    ratioSliders.add(slider);
+}
+void BancomAudioProcessorEditor::addThresholdSlider()
+{
+    Slider* slider = new Slider();
+    slider->setRange(-90.0f, 0.0f);
+    slider->setSkewFactor(2.0f);
+    slider->setValue(0.0f, dontSendNotification);
+    slider->setTextValueSuffix(" dB");
+    slider->setPopupDisplayEnabled (true, false, this);
+    slider->addListener(this);
+    addAndMakeVisible(slider);
+    thresholdSliders.add(slider);
 }
 
 BancomAudioProcessorEditor::~BancomAudioProcessorEditor()
@@ -86,9 +142,25 @@ void BancomAudioProcessorEditor::sliderValueChanged (Slider* slider)
 {
     for(int i = 0; i < gainSliders.size(); ++i)
     {
-	if(gainSliders[i] == slider)
+	if(slider == gainSliders[i])
 	{
 	    processor.setGainOnFilter(i, slider->getValue());
+	}
+	else if (slider == attackSliders[i])
+	{
+	    processor.setAttackOnFilter(i, slider->getValue()/1000);
+	}
+	else if (slider == releaseSliders[i])
+	{
+	    processor.setReleaseOnFilter(i, slider->getValue()/1000);
+	}
+	else if (slider == thresholdSliders[i])
+	{
+	    processor.setThresholdOnFilter(i, slider->getValue());
+	}
+	else if (slider == ratioSliders[i])
+	{
+	    processor.setRatioOnFilter(i, slider->getValue());
 	}
     }
 }
@@ -97,13 +169,21 @@ void BancomAudioProcessorEditor::buttonClicked(Button* button)
 {
     if (button == &addCrossoverButton && gainSliders.size() < 8)
     {
-	addGainSlider();
 	addFrequencySlider();
+	addGainSlider();
+	addRatioSlider();
+	addAttackSlider();
+	addReleaseSlider();
+	addThresholdSlider();
 	resized();
     }
     else if (button == &removeCrossoverButton && gainSliders.size() > 2)
     {
 	gainSliders.removeLast();
+	attackSliders.removeLast();
+	releaseSliders.removeLast();
+	thresholdSliders.removeLast();
+	ratioSliders.removeLast();
 	frequencySliders.removeLast();
 	resized();
     }
@@ -125,7 +205,11 @@ void BancomAudioProcessorEditor::resized()
     int sliderSpacing = 30;
     int frequencySliderWidth = 100;
     for (int i = 0; i < gainSliders.size(); ++i){
-	gainSliders[i]->setBounds(border + frequencySliderWidth, 20 + i*sliderSpacing, getWidth() - 2*border - frequencySliderWidth, 20);
+	thresholdSliders[i]->setBounds(border + frequencySliderWidth, 20 + i*sliderSpacing, 300, 20);
+	ratioSliders[i]->setBounds(border + frequencySliderWidth + 300, 20 + i*sliderSpacing, 300, 20);
+	attackSliders[i]->setBounds(border + frequencySliderWidth + 600, 20 + i*sliderSpacing, frequencySliderWidth, 20);
+	releaseSliders[i]->setBounds(border + frequencySliderWidth + 600 + frequencySliderWidth, 20 + i*sliderSpacing, frequencySliderWidth, 20);
+	gainSliders[i]->setBounds(border + frequencySliderWidth + 600 + 2*frequencySliderWidth, 20 + i*sliderSpacing, 300, 20);
     }
 
     for (int i = 0; i < frequencySliders.size(); ++i){

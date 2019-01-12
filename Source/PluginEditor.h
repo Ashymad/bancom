@@ -29,6 +29,10 @@ class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::
 	void buttonClicked (Button* button) override;
 	void addGainSlider();
 	void addFrequencySlider();
+	void addAttackSlider();
+	void addReleaseSlider();
+	void addRatioSlider();
+	void addThresholdSlider();
 
     private:
 	// This reference is provided as a quick way for your editor to
@@ -37,6 +41,10 @@ class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::
 
 	OwnedArray<Slider> gainSliders;
 	OwnedArray<Slider> frequencySliders;
+	OwnedArray<Slider> attackSliders;
+	OwnedArray<Slider> releaseSliders;
+	OwnedArray<Slider> ratioSliders;
+	OwnedArray<Slider> thresholdSliders;
 
 	TextButton addCrossoverButton;
 	TextButton removeCrossoverButton;

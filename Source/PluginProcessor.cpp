@@ -208,6 +208,34 @@ void BancomAudioProcessor::setGainOnFilter(unsigned int filterNumber, float newG
     }
 }
 
+void BancomAudioProcessor::setAttackOnFilter(unsigned int filterNumber, float newAttack)
+{
+    if (filterNumber < compressorNodes.size()){
+	CompressorProcessor* compressorProcessor = dynamic_cast<CompressorProcessor*>(compressorNodes[filterNumber]->getProcessor());
+	compressorProcessor->setAttack(newAttack);
+    }
+}
+void BancomAudioProcessor::setRatioOnFilter(unsigned int filterNumber, float newRatio)
+{
+    if (filterNumber < compressorNodes.size()){
+	CompressorProcessor* compressorProcessor = dynamic_cast<CompressorProcessor*>(compressorNodes[filterNumber]->getProcessor());
+	compressorProcessor->setRatio(newRatio);
+    }
+}
+void BancomAudioProcessor::setThresholdOnFilter(unsigned int filterNumber, float newThreshold)
+{
+    if (filterNumber < compressorNodes.size()){
+	CompressorProcessor* compressorProcessor = dynamic_cast<CompressorProcessor*>(compressorNodes[filterNumber]->getProcessor());
+	compressorProcessor->setThreshold(newThreshold);
+    }
+}
+void BancomAudioProcessor::setReleaseOnFilter(unsigned int filterNumber, float newRelease)
+{
+    if (filterNumber < compressorNodes.size()){
+	CompressorProcessor* compressorProcessor = dynamic_cast<CompressorProcessor*>(compressorNodes[filterNumber]->getProcessor());
+	compressorProcessor->setRelease(newRelease);
+    }
+}
 //==============================================================================
 bool BancomAudioProcessor::hasEditor() const
 {

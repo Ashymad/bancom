@@ -11,6 +11,7 @@
 #pragma once
 
 #include "ProcessorBase.h"
+#include "CircularArray.h"
 
 class CompressorProcessor  : public ProcessorBase
 {
@@ -21,14 +22,20 @@ class CompressorProcessor  : public ProcessorBase
 	void prepareToPlay (double sampleRate, int samplesPerBlock) override;
 	void processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages) override;
 	void reset() override;
+	void setAttack(float newAttack);
+	void setRelease(float newRelease);
+	void setRatio(float newRatio);
+	void setThreshold(float newThreshold);
     private:
 	float currentGain;
-	const float gainSlope;
+	const float gainSlope = 6;
+	const int averagingTime = 1;
+	CircularArray<float> rmsValues;
 	float ratio, threshold, attack, release;
 	/**
 	 * Ratio - RMS [dB] over threshold is divided by this value to obtain the gain
 	 * Threshold - threshold value in dB
-	 * Attack - time it takes to increase gain SLOPE dB
-	 * Release - time it takes to decrease gain SLOPE dB
+	 * Attack - time it takes to increase gain by $slope dB
+	 * Release - time it takes to decrease gain by $slope dB
 	 **/
 };

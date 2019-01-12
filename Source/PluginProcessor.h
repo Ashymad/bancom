@@ -64,6 +64,10 @@ class BancomAudioProcessor  : public AudioProcessor
 
 	//=============================================================================
 	void setGainOnFilter(unsigned int filterNumber, float newGainDecibels);
+	void setAttackOnFilter(unsigned int filterNumber, float newAttack);
+	void setRatioOnFilter(unsigned int filterNumber, float newRatio);
+	void setThresholdOnFilter(unsigned int filterNumber, float newThreshold);
+	void setReleaseOnFilter(unsigned int filterNumber, float newRelease);
 	void setFrequencies(const Array<float>& frequencies);
 
 	//==============================================================================

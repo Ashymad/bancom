@@ -69,6 +69,8 @@ class BancomAudioProcessor  : public AudioProcessor
 	void setThresholdOnFilter(unsigned int filterNumber, float newThreshold);
 	void setReleaseOnFilter(unsigned int filterNumber, float newRelease);
 	void setFrequencies(const Array<float>& frequencies);
+	float getRMSOnFilter(unsigned int filterNumber);
+	float getCompressionOnFilter(unsigned int filterNumber);
 
 	//==============================================================================
 	void getStateInformation (MemoryBlock& destData) override;

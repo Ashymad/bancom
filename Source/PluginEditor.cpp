@@ -19,7 +19,13 @@ BancomAudioProcessorEditor::BancomAudioProcessorEditor (BancomAudioProcessor& p)
     frequencySliders(),
     addCrossoverButton(),
     removeCrossoverButton(),
-    applyButton()
+    applyButton(),
+    attackSliders(),
+    releaseSliders(),
+    ratioSliders(),
+    thresholdSliders(),
+    levelMeterImages(),
+    levelMeterGraphics()
 {
     int crosses = 1;
 
@@ -30,12 +36,14 @@ BancomAudioProcessorEditor::BancomAudioProcessorEditor (BancomAudioProcessor& p)
 	addReleaseSlider();
 	addThresholdSlider();
 	addFrequencySlider();
+	addLevelMeterGraphics();
     }
     addGainSlider();
     addRatioSlider();
     addAttackSlider();
     addReleaseSlider();
     addThresholdSlider();
+    addLevelMeterGraphics();
     
     addCrossoverButton.setButtonText("Add");
     addCrossoverButton.addListener(this);
@@ -49,7 +57,17 @@ BancomAudioProcessorEditor::BancomAudioProcessorEditor (BancomAudioProcessor& p)
 
     processor.setFrequencies(Array<float>(125.0f));
 
-    setSize (1230, 300);
+    startTimerHz(30);
+
+    setSize (1530, 300);
+}
+
+void BancomAudioProcessorEditor::addLevelMeterGraphics()
+{
+    Image* image = new Image(Image::PixelFormat::RGB, 300, 20, true);
+    levelMeterImages.add(image);
+    Graphics* graphics = new Graphics(*image);
+    levelMeterGraphics.add(graphics);
 }
 
 void BancomAudioProcessorEditor::addGainSlider()
@@ -134,8 +152,38 @@ void BancomAudioProcessorEditor::paint (Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
 
+    for (int i = 0; i < levelMeterImages.size(); ++i)
+    {
+	g.drawImageAt(*levelMeterImages[i], 20 + 3*100 + 900, 20 + i*30);
+    }
     g.setColour (Colours::white);
     g.setFont (15.0f);
+}
+
+void BancomAudioProcessorEditor::timerCallback()
+{
+    int maxSize = 300;
+    float  range = 90;
+
+    for (int i = 0; i < levelMeterImages.size(); ++i)
+    {
+	float rms = processor.getRMSOnFilter(i);
+	rms = rms < -range ? -range : rms;
+	int rmsSize = roundToInt(maxSize*(range + rms)/range);
+	float comp = processor.getCompressionOnFilter(i);
+	int compSize = -roundToInt(maxSize*comp/range);
+	int gainSize = roundToInt(maxSize*gainSliders[i]->getValue()/range);
+	levelMeterGraphics[i]->fillAll(Colour(0,0,0));
+	levelMeterGraphics[i]->setColour(Colour(0, 255, 0));
+	levelMeterGraphics[i]->fillRect(0, 0, gainSize, 20);
+	levelMeterGraphics[i]->setColour(Colour(255, 255, 0));
+	levelMeterGraphics[i]->fillRect(gainSize, 0, rmsSize, 20);
+	levelMeterGraphics[i]->setColour(Colour(255, 0, 0));
+	levelMeterGraphics[i]->fillRect(gainSize+rmsSize - compSize, 0, compSize, 20);
+	levelMeterGraphics[i]->setColour(Colour(0, 0, 255));
+	levelMeterGraphics[i]->fillRect(gainSize+roundToInt(maxSize*(range + thresholdSliders[i]->getValue())/range), 0, 2, 20);
+    }
+    repaint();
 }
 
 void BancomAudioProcessorEditor::sliderValueChanged (Slider* slider)
@@ -175,6 +223,7 @@ void BancomAudioProcessorEditor::buttonClicked(Button* button)
 	addAttackSlider();
 	addReleaseSlider();
 	addThresholdSlider();
+	addLevelMeterGraphics();
 	resized();
     }
     else if (button == &removeCrossoverButton && gainSliders.size() > 2)
@@ -185,6 +234,8 @@ void BancomAudioProcessorEditor::buttonClicked(Button* button)
 	thresholdSliders.removeLast();
 	ratioSliders.removeLast();
 	frequencySliders.removeLast();
+	levelMeterImages.removeLast();
+	levelMeterGraphics.removeLast();
 	resized();
     }
     else if (button == &applyButton)
@@ -208,8 +259,8 @@ void BancomAudioProcessorEditor::resized()
 	thresholdSliders[i]->setBounds(border + frequencySliderWidth, 20 + i*sliderSpacing, 300, 20);
 	ratioSliders[i]->setBounds(border + frequencySliderWidth + 300, 20 + i*sliderSpacing, 300, 20);
 	attackSliders[i]->setBounds(border + frequencySliderWidth + 600, 20 + i*sliderSpacing, frequencySliderWidth, 20);
-	releaseSliders[i]->setBounds(border + frequencySliderWidth + 600 + frequencySliderWidth, 20 + i*sliderSpacing, frequencySliderWidth, 20);
-	gainSliders[i]->setBounds(border + frequencySliderWidth + 600 + 2*frequencySliderWidth, 20 + i*sliderSpacing, 300, 20);
+	releaseSliders[i]->setBounds(border + 2*frequencySliderWidth + 600, 20 + i*sliderSpacing, frequencySliderWidth, 20);
+	gainSliders[i]->setBounds(border + 3*frequencySliderWidth + 600, 20 + i*sliderSpacing, 300, 20);
     }
 
     for (int i = 0; i < frequencySliders.size(); ++i){

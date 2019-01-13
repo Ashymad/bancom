@@ -16,7 +16,7 @@
 //==============================================================================
 /**
 */
-class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::Listener, public Button::Listener
+class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::Listener, public Button::Listener, public Timer
 {
     public:
 	BancomAudioProcessorEditor (BancomAudioProcessor&);
@@ -33,6 +33,8 @@ class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::
 	void addReleaseSlider();
 	void addRatioSlider();
 	void addThresholdSlider();
+	void addLevelMeterGraphics();
+	void timerCallback() override;
 
     private:
 	// This reference is provided as a quick way for your editor to
@@ -45,6 +47,9 @@ class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::
 	OwnedArray<Slider> releaseSliders;
 	OwnedArray<Slider> ratioSliders;
 	OwnedArray<Slider> thresholdSliders;
+
+	OwnedArray<Image> levelMeterImages;
+	OwnedArray<Graphics> levelMeterGraphics;
 
 	TextButton addCrossoverButton;
 	TextButton removeCrossoverButton;

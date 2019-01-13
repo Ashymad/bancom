@@ -236,6 +236,20 @@ void BancomAudioProcessor::setReleaseOnFilter(unsigned int filterNumber, float n
 	compressorProcessor->setRelease(newRelease);
     }
 }
+float BancomAudioProcessor::getRMSOnFilter(unsigned int filterNumber)
+{
+    if (filterNumber < compressorNodes.size()){
+	CompressorProcessor* compressorProcessor = dynamic_cast<CompressorProcessor*>(compressorNodes[filterNumber]->getProcessor());
+	return compressorProcessor->getRMS();
+    } else return -90;
+}
+float BancomAudioProcessor::getCompressionOnFilter(unsigned int filterNumber)
+{
+    if (filterNumber < compressorNodes.size()){
+	CompressorProcessor* compressorProcessor = dynamic_cast<CompressorProcessor*>(compressorNodes[filterNumber]->getProcessor());
+	return compressorProcessor->getCompression();
+    } else return 0;
+}
 //==============================================================================
 bool BancomAudioProcessor::hasEditor() const
 {

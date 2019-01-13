@@ -16,6 +16,7 @@ CompressorProcessor::CompressorProcessor() :
     attack(2.0f),
     release(100.0f),
     currentGain(0.0f),
+    currentRMS(-90),
     rmsValues(CircularArray<float>())
 {
     setPlayConfigDetails(2, 2, getSampleRate(), getBlockSize());
@@ -42,16 +43,16 @@ void CompressorProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& m
     rmsValues.setAndRotate(square(sensorValue));
     sensorValue = 0;
     for (float el : rmsValues) sensorValue += el;
-    sensorValue = Decibels::gainToDecibels(sqrt(sensorValue/rmsValues.size()));
+    currentRMS = Decibels::gainToDecibels(sqrt(sensorValue/rmsValues.size()));
     
-    float compressGain = jmin(threshold - sensorValue, 0.0f)*(ratio-1)/ratio;
+    float compressGain = jmin(threshold - currentRMS, 0.0f)*(ratio-1)/ratio;
     float diffGain = compressGain - currentGain;
 
-    if (abs(diffGain) > 0.1)
+    if (abs(diffGain) > 0.01)
     {
-	float rampSamples = getSampleRate()/gainSlope;
-	rampSamples *= compressGain > currentGain ? diffGain*release : -diffGain*attack;
+	float rampSamples = getSampleRate() * (compressGain > currentGain ? release : attack);
 	int rampSamplesInt = roundToInt(rampSamples);
+
 	if (numSamples < rampSamplesInt)
 	{
 	    compressGain = Decibels::gainToDecibels(Decibels::decibelsToGain(currentGain) +
@@ -83,6 +84,14 @@ void CompressorProcessor::setRatio(float newRatio)
 void CompressorProcessor::setThreshold(float newThreshold)
 {
     threshold = newThreshold;
+}
+float CompressorProcessor::getRMS() const
+{
+    return currentRMS;
+}
+float CompressorProcessor::getCompression() const
+{
+    return currentGain;
 }
 void CompressorProcessor::reset()
 {

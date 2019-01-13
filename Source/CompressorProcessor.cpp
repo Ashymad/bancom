@@ -13,8 +13,8 @@
 CompressorProcessor::CompressorProcessor() :
     ratio(1.0f),
     threshold(0.0f),
-    attack(2.0f),
-    release(100.0f),
+    attack(0.02f),
+    release(0.1f),
     currentGain(0.0f),
     currentRMS(-90),
     rmsValues(CircularArray<float>())

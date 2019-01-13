@@ -96,8 +96,8 @@ void BancomAudioProcessorEditor::addFrequencySlider()
 void BancomAudioProcessorEditor::addAttackSlider()
 {
     Slider* slider = new Slider();
-    slider->setRange(0.0f, 500.0f, 1);
-    slider->setValue(2.0f);
+    slider->setRange(0.0f, 1000.0f, 1);
+    slider->setValue(20.0f);
     slider->setSliderStyle(Slider::SliderStyle::IncDecButtons);
     slider->setTextValueSuffix(" ms");
     slider->setPopupDisplayEnabled (true, false, this);

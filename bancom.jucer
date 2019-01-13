@@ -2,7 +2,8 @@
 
 <JUCERPROJECT id="VH8V5Z" name="bancom" projectType="audioplug" jucerVersion="5.4.1"
               pluginFormats="buildStandalone,buildVST,buildVST3" headerPath="/home/shyman/Documents/Workspace/SDK/VST_SDK/VST2_SDK"
-              pluginManufacturer="5hy" aaxIdentifier="men.5hy.bancom">
+              pluginManufacturer="5hy" aaxIdentifier="men.5hy.bancom" companyName="5hy"
+              companyWebsite="5hy.men">
   <MAINGROUP id="WN204n" name="bancom">
     <GROUP id="{E8397F12-EA48-045A-8291-C5C9AF8D6CA4}" name="Source">
       <FILE id="T2WMxG" name="CircularArray.h" compile="0" resource="0" file="Source/CircularArray.h"/>

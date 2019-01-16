@@ -12,6 +12,7 @@
 
 #include "ProcessorBase.h"
 #include "CircularArray.h"
+#include "helpers.h"
 
 class CompressorProcessor  : public ProcessorBase
 {
@@ -29,9 +30,12 @@ class CompressorProcessor  : public ProcessorBase
 	float getRMS() const;
 	float getCompression() const;
     private:
+	const float slope = 6;
+	const float averagingTime = 0.5;
+	const float minGainDifference = 0.01;
+
 	float currentGain;
 	float currentRMS;
-	const int averagingTime = 1;
 	CircularArray<float> rmsValues;
 	float ratio, threshold, attack, release;
 	/**

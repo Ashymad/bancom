@@ -13,7 +13,7 @@
 CompressorProcessor::CompressorProcessor() :
     ratio(1.0f),
     threshold(0.0f),
-    attack(0.02f),
+    attack(0.003f),
     release(0.1f),
     currentGain(0.0f),
     currentRMS(-90),
@@ -48,21 +48,10 @@ void CompressorProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& m
     float compressGain = jmin(threshold - currentRMS, 0.0f)*(ratio-1)/ratio;
     float diffGain = compressGain - currentGain;
 
-    if (abs(diffGain) > 0.01)
+    if (abs(diffGain) >= minGainDifference)
     {
-	float rampSamples = getSampleRate() * (compressGain > currentGain ? release : attack);
-	int rampSamplesInt = roundToInt(rampSamples);
-
-	if (numSamples < rampSamplesInt)
-	{
-	    compressGain = Decibels::gainToDecibels(Decibels::decibelsToGain(currentGain) +
-		(Decibels::decibelsToGain(compressGain) - Decibels::decibelsToGain(currentGain))*numSamples/rampSamples);
-	    rampSamplesInt = numSamples;
-	}
-	buffer.applyGainRamp(0, rampSamplesInt,
-		Decibels::decibelsToGain(currentGain),
-		Decibels::decibelsToGain(compressGain));
-	currentGain = compressGain;
+	currentGain = applyGainSlopeDecibels(buffer, currentGain, compressGain,
+		slope/((diffGain > 0 ? release : attack)*getSampleRate()));
     }
     else
     {

@@ -97,7 +97,7 @@ void BancomAudioProcessorEditor::addAttackSlider()
 {
     Slider* slider = new Slider();
     slider->setRange(0.0f, 1000.0f, 1);
-    slider->setValue(20.0f);
+    slider->setValue(3.0f);
     slider->setSliderStyle(Slider::SliderStyle::IncDecButtons);
     slider->setTextValueSuffix(" ms");
     slider->setPopupDisplayEnabled (true, false, this);
@@ -163,7 +163,7 @@ void BancomAudioProcessorEditor::paint (Graphics& g)
 void BancomAudioProcessorEditor::timerCallback()
 {
     int maxSize = 300;
-    float  range = 90;
+    float range = 90;
 
     for (int i = 0; i < levelMeterImages.size(); ++i)
     {

@@ -56,3 +56,32 @@ OwnedArray<IIRFilterCascadeProcessor> designLRFilterBank(Array<float>& frequenci
 
     return filterBank;
 }
+
+float applyGainSlopeDecibels(AudioSampleBuffer& buffer,
+	float startGainDecibels, float endGainDecibels, float slopeDecibels,
+	unsigned int startIndex) // slope is in decibels per sample
+{
+    int numSamples = buffer.getNumSamples();
+    int numChannels = buffer.getNumChannels();
+
+    jassert(startIndex < numSamples);
+    jassert(slopeDecibels >= 0);
+
+    float endGain = Decibels::decibelsToGain(endGainDecibels);
+    int sign = endGainDecibels > startGainDecibels ?  1 : -1;
+    float slope = Decibels::decibelsToGain(sign*slopeDecibels);
+    float currentGain;
+    float* wPointer;
+
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
+	wPointer = buffer.getWritePointer(channel);
+	currentGain = Decibels::decibelsToGain(startGainDecibels);
+	for (int sample = startIndex; sample < numSamples; ++sample)
+	{
+	    if (sign*currentGain < sign*endGain) currentGain *= slope;
+	    wPointer[sample] *= currentGain;
+	}
+    }
+    return Decibels::gainToDecibels(currentGain);
+}

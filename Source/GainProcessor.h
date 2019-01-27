@@ -21,6 +21,7 @@ class GainProcessor  : public ProcessorBase
 	void prepareToPlay (double sampleRate, int samplesPerBlock) override;
 	void processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages) override;
 	void setGainDecibels(float newGainDecibels);
+	float getGainDecibels();
 	void reset() override;
     private:
 	dsp::Gain<float> gain;

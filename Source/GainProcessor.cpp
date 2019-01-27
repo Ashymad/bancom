@@ -36,6 +36,11 @@ void GainProcessor::setGainDecibels(float newGainDecibels)
     gain.setGainDecibels(newGainDecibels);
 }
 
+float GainProcessor::getGainDecibels()
+{
+    return gain.getGainDecibels();
+}
+
 void GainProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     dsp::AudioBlock<float> block (buffer);

@@ -264,15 +264,61 @@ AudioProcessorEditor* BancomAudioProcessor::createEditor()
 //==============================================================================
 void BancomAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    ValueTree tree = ValueTree("BancomState");
+    Array<var> freqVars{};
+
+    for (float fq : frequencies)
+    {
+	freqVars.add(fq);
+    }
+
+    tree.setProperty("frequencies", freqVars, nullptr);
+
+    for (int i = 0; i < compressorNodes.size(); ++i)
+    {
+	ValueTree bTree = ValueTree(Identifier("Band" + std::to_string(i)));
+	CompressorProcessor* compressorProcessor = dynamic_cast<CompressorProcessor*>(compressorNodes[i]->getProcessor());
+	Array<float> compressorParameters = compressorProcessor->getParametersFloat();
+	GainProcessor* gainProcessor = dynamic_cast<GainProcessor*>(gainNodes[i]->getProcessor());
+
+	bTree.setProperty("gain", gainProcessor->getGainDecibels(), nullptr);
+	bTree.setProperty("attack", compressorParameters[0], nullptr);
+	bTree.setProperty("release", compressorParameters[1], nullptr);
+	bTree.setProperty("ratio", compressorParameters[2], nullptr);
+	bTree.setProperty("threshold", compressorParameters[3], nullptr);
+	tree.appendChild(bTree, nullptr);
+    }
+
+    MemoryOutputStream stream(destData, false);
+    tree.writeToStream(stream);
 }
 
 void BancomAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    ValueTree tree = ValueTree::readFromData (data, size_t (sizeInBytes));
+    if (tree.isValid()) {
+	frequencies.clear();
+	var freqs = tree.getProperty("frequencies");
+	for (int i = 0; i < freqs.size(); ++i)
+	{
+	    frequencies.add(freqs[i]);
+	}
+	initialiseFilters();
+	prepareGraph();
+	connectNodes();
+	for (int i = 0; i < compressorNodes.size(); ++i)
+	{
+	    ValueTree bTree = tree.getChild(i);
+	    CompressorProcessor* compressorProcessor = dynamic_cast<CompressorProcessor*>(compressorNodes[i]->getProcessor());
+	    GainProcessor* gainProcessor = dynamic_cast<GainProcessor*>(gainNodes[i]->getProcessor());
+
+	    gainProcessor->setGainDecibels(bTree.getProperty("gain"));
+	    compressorProcessor->setAttack(bTree.getProperty("attack"));
+	    compressorProcessor->setRelease(bTree.getProperty("release"));
+	    compressorProcessor->setRatio(bTree.getProperty("ratio"));
+	    compressorProcessor->setThreshold(bTree.getProperty("threshold"));
+	}
+    }
 }
 
 void BancomAudioProcessor::reset()

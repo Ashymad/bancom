@@ -74,6 +74,18 @@ void CompressorProcessor::setThreshold(float newThreshold)
 {
     threshold = newThreshold;
 }
+Array<float> CompressorProcessor::getParametersFloat()
+{
+    return Array<float>{attack, release, ratio, threshold};
+}
+void CompressorProcessor::setParametersFloat(const Array<float>& parameters)
+{
+    jassert(parameters.size() == 4);
+    attack = parameters[0];
+    release = parameters[1];
+    ratio = parameters[3];
+    threshold = parameters[4];
+}
 float CompressorProcessor::getRMS() const
 {
     return currentRMS;

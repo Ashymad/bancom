@@ -27,8 +27,10 @@ class CompressorProcessor  : public ProcessorBase
 	void setRelease(float newRelease);
 	void setRatio(float newRatio);
 	void setThreshold(float newThreshold);
+	void setParametersFloat(const Array<float>& parameters);
 	float getRMS() const;
 	float getCompression() const;
+	Array<float> getParametersFloat();
     private:
 	const float slope = 6;
 	const float averagingTime = 0.5;

@@ -31,7 +31,6 @@ BancomAudioProcessorEditor::BancomAudioProcessorEditor (BancomAudioProcessor& p)
     processor.getStateInformation(data);
     MemoryInputStream stream(data, false);
     ValueTree processorTree = ValueTree::readFromStream(stream);
-    DBG(processorTree.toXmlString());
 
     for (int i = 0; i < processorTree.getNumChildren(); ++i){
 	addGainSlider();
@@ -50,8 +49,8 @@ BancomAudioProcessorEditor::BancomAudioProcessorEditor (BancomAudioProcessor& p)
 
 	gainSliders.getLast()->setValue(bTree.getProperty("gain"), dontSendNotification);
 	ratioSliders.getLast()->setValue(bTree.getProperty("ratio"), dontSendNotification);
-	attackSliders.getLast()->setValue(bTree.getProperty("attack"), dontSendNotification);
-	releaseSliders.getLast()->setValue(bTree.getProperty("release"), dontSendNotification);
+	attackSliders.getLast()->setValue(static_cast<float>(bTree.getProperty("attack"))*1000, dontSendNotification);
+	releaseSliders.getLast()->setValue(static_cast<float>(bTree.getProperty("release"))*1000, dontSendNotification);
 	thresholdSliders.getLast()->setValue(bTree.getProperty("threshold"), dontSendNotification);
     }
     
@@ -81,7 +80,7 @@ void BancomAudioProcessorEditor::addLevelMeterGraphics()
 void BancomAudioProcessorEditor::addGainSlider()
 {
     Slider* slider = new Slider();
-    slider->setRange(0.0f, 40.0f);
+    slider->setRange(0.0f, 40.0f, 0.1f);
     slider->setValue(0.0f, dontSendNotification);
     slider->setTextValueSuffix(" dB");
     slider->setPopupDisplayEnabled (true, false, this);
@@ -128,7 +127,7 @@ void BancomAudioProcessorEditor::addReleaseSlider()
 void BancomAudioProcessorEditor::addRatioSlider()
 {
     Slider* slider = new Slider();
-    slider->setRange(1.0f, 90.0f);
+    slider->setRange(1.0f, 90.0f, 0.1f);
     slider->setSkewFactor(0.5f);
     slider->setValue(1.0f, dontSendNotification);
     slider->setTextValueSuffix(":1");
@@ -140,7 +139,7 @@ void BancomAudioProcessorEditor::addRatioSlider()
 void BancomAudioProcessorEditor::addThresholdSlider()
 {
     Slider* slider = new Slider();
-    slider->setRange(-90.0f, 0.0f);
+    slider->setRange(-90.0f, 0.0f, 0.1f);
     slider->setSkewFactor(2.0f);
     slider->setValue(0.0f, dontSendNotification);
     slider->setTextValueSuffix(" dB");

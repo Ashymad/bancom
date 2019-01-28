@@ -309,8 +309,8 @@ void BancomAudioProcessor::setStateInformation (const void* data, int sizeInByte
 	    float threshold = bTree.getProperty("threshold");
 
 	    gainProcessor->setGainDecibels(gain);
-	    compressorProcessor->setAttack(attack*1000);
-	    compressorProcessor->setRelease(release*1000);
+	    compressorProcessor->setAttack(attack);
+	    compressorProcessor->setRelease(release);
 	    compressorProcessor->setRatio(ratio);
 	    compressorProcessor->setThreshold(threshold);
 

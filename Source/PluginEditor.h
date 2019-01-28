@@ -41,15 +41,15 @@ class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::
 	// access the processor object that created it.
 	BancomAudioProcessor& processor;
 
+	OwnedArray<Image> levelMeterImages;
+	OwnedArray<Graphics> levelMeterGraphics;
+
 	OwnedArray<Slider> gainSliders;
 	OwnedArray<Slider> frequencySliders;
 	OwnedArray<Slider> attackSliders;
 	OwnedArray<Slider> releaseSliders;
 	OwnedArray<Slider> ratioSliders;
 	OwnedArray<Slider> thresholdSliders;
-
-	OwnedArray<Image> levelMeterImages;
-	OwnedArray<Graphics> levelMeterGraphics;
 
 	TextButton addCrossoverButton;
 	TextButton removeCrossoverButton;

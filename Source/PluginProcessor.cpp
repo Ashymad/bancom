@@ -26,10 +26,10 @@ BancomAudioProcessor::BancomAudioProcessor() :
     mainProcessor(new AudioProcessorGraph()),
     filterNodes(Array<Node::Ptr>()),
     gainNodes(Array<Node::Ptr>()),
-    compressorNodes(Array<Node::Ptr>()),
-    frequencies(Array<float>())
+    compressorNodes(Array<Node::Ptr>())
 {
     initialiseGraph();
+    frequencies = Array<float>(125.0f);
 }
 
 BancomAudioProcessor::~BancomAudioProcessor()
@@ -265,14 +265,6 @@ AudioProcessorEditor* BancomAudioProcessor::createEditor()
 void BancomAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     ValueTree tree = ValueTree("BancomState");
-    Array<var> freqVars{};
-
-    for (float fq : frequencies)
-    {
-	freqVars.add(fq);
-    }
-
-    tree.setProperty("frequencies", freqVars, nullptr);
 
     for (int i = 0; i < compressorNodes.size(); ++i)
     {
@@ -281,6 +273,7 @@ void BancomAudioProcessor::getStateInformation (MemoryBlock& destData)
 	Array<float> compressorParameters = compressorProcessor->getParametersFloat();
 	GainProcessor* gainProcessor = dynamic_cast<GainProcessor*>(gainNodes[i]->getProcessor());
 
+	if (i > 0) bTree.setProperty("frequency", frequencies[i-1], nullptr);
 	bTree.setProperty("gain", gainProcessor->getGainDecibels(), nullptr);
 	bTree.setProperty("attack", compressorParameters[0], nullptr);
 	bTree.setProperty("release", compressorParameters[1], nullptr);
@@ -297,26 +290,32 @@ void BancomAudioProcessor::setStateInformation (const void* data, int sizeInByte
 {
     ValueTree tree = ValueTree::readFromData (data, size_t (sizeInBytes));
     if (tree.isValid()) {
+	gainNodes.clear();
+	compressorNodes.clear();
 	frequencies.clear();
-	var freqs = tree.getProperty("frequencies");
-	for (int i = 0; i < freqs.size(); ++i)
-	{
-	    frequencies.add(freqs[i]);
-	}
-	initialiseFilters();
-	prepareGraph();
-	connectNodes();
-	for (int i = 0; i < compressorNodes.size(); ++i)
+
+	for (int i = 0; i < tree.getNumChildren(); ++i)
 	{
 	    ValueTree bTree = tree.getChild(i);
-	    CompressorProcessor* compressorProcessor = dynamic_cast<CompressorProcessor*>(compressorNodes[i]->getProcessor());
-	    GainProcessor* gainProcessor = dynamic_cast<GainProcessor*>(gainNodes[i]->getProcessor());
+	    CompressorProcessor*  compressorProcessor = new CompressorProcessor();
+	    GainProcessor* gainProcessor = new GainProcessor();
 
-	    gainProcessor->setGainDecibels(bTree.getProperty("gain"));
-	    compressorProcessor->setAttack(bTree.getProperty("attack"));
-	    compressorProcessor->setRelease(bTree.getProperty("release"));
-	    compressorProcessor->setRatio(bTree.getProperty("ratio"));
-	    compressorProcessor->setThreshold(bTree.getProperty("threshold"));
+	    if (i > 0) frequencies.add(bTree.getProperty("frequency"));
+
+	    float gain = bTree.getProperty("gain");
+	    float attack = bTree.getProperty("attack");
+	    float release = bTree.getProperty("release");
+	    float ratio = bTree.getProperty("ratio");
+	    float threshold = bTree.getProperty("threshold");
+
+	    gainProcessor->setGainDecibels(gain);
+	    compressorProcessor->setAttack(attack*1000);
+	    compressorProcessor->setRelease(release*1000);
+	    compressorProcessor->setRatio(ratio);
+	    compressorProcessor->setThreshold(threshold);
+
+	    gainNodes.add(mainProcessor->addNode(gainProcessor));
+	    compressorNodes.add(mainProcessor->addNode(compressorProcessor));
 	}
     }
 }

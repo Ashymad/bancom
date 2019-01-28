@@ -27,23 +27,33 @@ BancomAudioProcessorEditor::BancomAudioProcessorEditor (BancomAudioProcessor& p)
     levelMeterImages(),
     levelMeterGraphics()
 {
-    int crosses = 1;
+    MemoryBlock data;
+    processor.getStateInformation(data);
+    MemoryInputStream stream(data, false);
+    ValueTree processorTree = ValueTree::readFromStream(stream);
+    DBG(processorTree.toXmlString());
 
-    for (int i = 0; i < crosses; ++i){
+    for (int i = 0; i < processorTree.getNumChildren(); ++i){
 	addGainSlider();
 	addRatioSlider();
 	addAttackSlider();
 	addReleaseSlider();
 	addThresholdSlider();
-	addFrequencySlider();
 	addLevelMeterGraphics();
+
+	ValueTree bTree = processorTree.getChild(i);
+	if (i > 0)
+	{
+	    addFrequencySlider();
+	    frequencySliders.getLast()->setValue(bTree.getProperty("frequency", dontSendNotification));
+	}
+
+	gainSliders.getLast()->setValue(bTree.getProperty("gain"), dontSendNotification);
+	ratioSliders.getLast()->setValue(bTree.getProperty("ratio"), dontSendNotification);
+	attackSliders.getLast()->setValue(bTree.getProperty("attack"), dontSendNotification);
+	releaseSliders.getLast()->setValue(bTree.getProperty("release"), dontSendNotification);
+	thresholdSliders.getLast()->setValue(bTree.getProperty("threshold"), dontSendNotification);
     }
-    addGainSlider();
-    addRatioSlider();
-    addAttackSlider();
-    addReleaseSlider();
-    addThresholdSlider();
-    addLevelMeterGraphics();
     
     addCrossoverButton.setButtonText("Add");
     addCrossoverButton.addListener(this);
@@ -54,8 +64,6 @@ BancomAudioProcessorEditor::BancomAudioProcessorEditor (BancomAudioProcessor& p)
     applyButton.setButtonText("Apply");
     applyButton.addListener(this);
     addAndMakeVisible(applyButton);
-
-    processor.setFrequencies(Array<float>(125.0f));
 
     startTimerHz(30);
 

@@ -1,35 +1,34 @@
-/*
-  ==============================================================================
-
-    This file was auto-generated!
-
-    It contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
+/* 
+ * This file is part of the bancom distribution (https://github.com/Ashymad/bancom).
+ * Copyright (c) 2019 Szymon Mikulicz.
+ * 
+ * This program is free software: you can redistribute it and/or modify  
+ * it under the terms of the GNU General Public License as published by  
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License 
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-//==============================================================================
 BancomAudioProcessor::BancomAudioProcessor() :
 #ifndef JucePlugin_PreferredChannelConfigurations
-    AudioProcessor (BusesProperties()
-#if ! JucePlugin_IsMidiEffect
-#if ! JucePlugin_IsSynth
+    ProcessorBase (BusesProperties()
 	    .withInput  ("Input",  AudioChannelSet::stereo(), true)
-#endif
 	    .withOutput ("Output", AudioChannelSet::stereo(), true)
-#endif
 	    ),
 #endif
-    mainProcessor(new AudioProcessorGraph()),
-    filterNodes(Array<Node::Ptr>()),
-    gainNodes(Array<Node::Ptr>()),
-    compressorNodes(Array<Node::Ptr>())
+    mainProcessor{new AudioProcessorGraph()}
 {
-    initialiseGraph();
     frequencies = Array<float>(125.0f);
+    initialiseGraph();
 }
 
 BancomAudioProcessor::~BancomAudioProcessor()
@@ -37,74 +36,20 @@ BancomAudioProcessor::~BancomAudioProcessor()
 
 }
 
-//==============================================================================
 const String BancomAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool BancomAudioProcessor::acceptsMidi() const
-{
-    return false;
-}
-
-bool BancomAudioProcessor::producesMidi() const
-{
-    return false;
-}
-
-bool BancomAudioProcessor::isMidiEffect() const
-{
-    return false;
-}
-
-double BancomAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
-int BancomAudioProcessor::getNumPrograms()
-{
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-    // so this should be at least 1, even if you're not really implementing programs.
-}
-
-int BancomAudioProcessor::getCurrentProgram()
-{
-    return 0;
-}
-
-void BancomAudioProcessor::setCurrentProgram (int index)
-{
-}
-
-const String BancomAudioProcessor::getProgramName (int index)
-{
-    return {};
-}
-
-void BancomAudioProcessor::changeProgramName (int index, const String& newName)
-{
-}
-
-//==============================================================================
 void BancomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    mainProcessor->setPlayConfigDetails (getMainBusNumInputChannels(),
+    mainProcessor->setPlayConfigDetails(getMainBusNumInputChannels(),
 	    getMainBusNumOutputChannels(),
 	    sampleRate, samplesPerBlock);
-    
+
     initialiseFilters(sampleRate);
     prepareGraph(sampleRate, samplesPerBlock);
     connectNodes();
-}
-
-void BancomAudioProcessor::prepareGraph (double sampleRate, int samplesPerBlock)
-{
-    sampleRate = sampleRate == 0 ? getSampleRate() : sampleRate;
-    samplesPerBlock = samplesPerBlock == 0 ? getBlockSize() : samplesPerBlock;
-
-    mainProcessor->prepareToPlay(sampleRate, samplesPerBlock);
 }
 
 void BancomAudioProcessor::releaseResources()
@@ -115,7 +60,7 @@ void BancomAudioProcessor::releaseResources()
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool BancomAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-    if (layouts.getMainInputChannelSet()  == AudioChannelSet::disabled()
+    if (layouts.getMainInputChannelSet() == AudioChannelSet::disabled()
 	    || layouts.getMainOutputChannelSet() == AudioChannelSet::disabled())
     {
 	return false;
@@ -129,11 +74,33 @@ bool BancomAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) c
 }
 #endif
 
+
 void BancomAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
     for (int i = getTotalNumInputChannels(); i < getTotalNumOutputChannels(); ++i)
 	buffer.clear (i, 0, buffer.getNumSamples());
     mainProcessor->processBlock (buffer, midiMessages);
+}
+
+bool BancomAudioProcessor::hasEditor() const
+{
+    return true; // (change this to false if you choose to not supply an editor)
+}
+
+AudioProcessorEditor* BancomAudioProcessor::createEditor()
+{
+    return new BancomAudioProcessorEditor{*this};
+}
+
+void BancomAudioProcessor::initialiseGraph()
+{
+    mainProcessor->clear();
+    filterNodes.clear();
+    gainNodes.clear();
+    compressorNodes.clear();
+
+    audioInputNode  = mainProcessor->addNode(new AudioGraphIOProcessor (AudioGraphIOProcessor::audioInputNode));
+    audioOutputNode = mainProcessor->addNode(new AudioGraphIOProcessor (AudioGraphIOProcessor::audioOutputNode));
 }
 
 void BancomAudioProcessor::initialiseFilters(float sampleRate)
@@ -146,7 +113,7 @@ void BancomAudioProcessor::initialiseFilters(float sampleRate)
 
     filterNodes.clear();
 
-    auto filterBank = designLRFilterBank(frequencies, sampleRate, 4);
+    auto filterBank = helpers::designLRFilterBank(frequencies, sampleRate, 4);
 
     while (filterBank.size() > 0)
     {
@@ -165,20 +132,12 @@ void BancomAudioProcessor::initialiseFilters(float sampleRate)
     }
 }
 
-void BancomAudioProcessor::setFrequencies(const Array<float>& frequencies)
+void BancomAudioProcessor::prepareGraph (double sampleRate, int samplesPerBlock)
 {
-    this->frequencies = frequencies;
-}
+    sampleRate = sampleRate == 0 ? getSampleRate() : sampleRate;
+    samplesPerBlock = samplesPerBlock == 0 ? getBlockSize() : samplesPerBlock;
 
-void BancomAudioProcessor::initialiseGraph()
-{
-    mainProcessor->clear();
-    filterNodes.clear();
-    gainNodes.clear();
-    compressorNodes.clear();
-
-    audioInputNode  = mainProcessor->addNode (new AudioGraphIOProcessor (AudioGraphIOProcessor::audioInputNode));
-    audioOutputNode = mainProcessor->addNode (new AudioGraphIOProcessor (AudioGraphIOProcessor::audioOutputNode));
+    mainProcessor->prepareToPlay(sampleRate, samplesPerBlock);
 }
 
 void BancomAudioProcessor::connectNodes()
@@ -187,17 +146,23 @@ void BancomAudioProcessor::connectNodes()
     {
 	mainProcessor->removeConnection(connection);
     }
+
     for (int channel = 0; channel < 2; ++channel)
     {
 	for (int node = 0; node < filterNodes.size(); ++node)
 	{
-	    mainProcessor->addConnection({ { audioInputNode->nodeID,  channel }, { filterNodes[node]->nodeID, channel } });
-	    mainProcessor->addConnection({ { filterNodes[node]->nodeID, channel}, { compressorNodes[node]->nodeID, channel } });
-	    mainProcessor->addConnection({ { compressorNodes[node]->nodeID, channel}, { gainNodes[node]->nodeID, channel } });
-	    mainProcessor->addConnection({ { gainNodes[node]->nodeID, channel}, { audioOutputNode->nodeID, channel } });
+	    mainProcessor->addConnection({{audioInputNode->nodeID,  channel}, {filterNodes[node]->nodeID, channel}});
+	    mainProcessor->addConnection({{filterNodes[node]->nodeID, channel}, {compressorNodes[node]->nodeID, channel}});
+	    mainProcessor->addConnection({{compressorNodes[node]->nodeID, channel}, {gainNodes[node]->nodeID, channel}});
+	    mainProcessor->addConnection({{gainNodes[node]->nodeID, channel}, {audioOutputNode->nodeID, channel}});
 	}
     }
 
+}
+
+void BancomAudioProcessor::setFrequencies(const Array<float>& frequencies)
+{
+    this->frequencies = frequencies;
 }
 
 void BancomAudioProcessor::setGainOnFilter(unsigned int filterNumber, float newGainDecibels)
@@ -236,32 +201,21 @@ void BancomAudioProcessor::setReleaseOnFilter(unsigned int filterNumber, float n
 	compressorProcessor->setRelease(newRelease);
     }
 }
-float BancomAudioProcessor::getRMSOnFilter(unsigned int filterNumber)
+float BancomAudioProcessor::getRMSOnFilter(unsigned int filterNumber) const
 {
     if (filterNumber < compressorNodes.size()){
 	CompressorProcessor* compressorProcessor = dynamic_cast<CompressorProcessor*>(compressorNodes[filterNumber]->getProcessor());
 	return compressorProcessor->getRMS();
     } else return -90;
 }
-float BancomAudioProcessor::getCompressionOnFilter(unsigned int filterNumber)
+float BancomAudioProcessor::getCompressionOnFilter(unsigned int filterNumber) const
 {
     if (filterNumber < compressorNodes.size()){
 	CompressorProcessor* compressorProcessor = dynamic_cast<CompressorProcessor*>(compressorNodes[filterNumber]->getProcessor());
 	return compressorProcessor->getCompression();
     } else return 0;
 }
-//==============================================================================
-bool BancomAudioProcessor::hasEditor() const
-{
-    return true; // (change this to false if you choose to not supply an editor)
-}
 
-AudioProcessorEditor* BancomAudioProcessor::createEditor()
-{
-    return new BancomAudioProcessorEditor (*this);
-}
-
-//==============================================================================
 void BancomAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     ValueTree tree = ValueTree("BancomState");

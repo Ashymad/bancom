@@ -44,7 +44,7 @@ helpers::designLRFilterBank(const Array<float>& frequencies, double sampleRate, 
 {
     int crosses = frequencies.size();
 
-    jassert([&](){// the frequencies must be sorted
+    jassert([&](){// the frequencies array must be sorted
 	auto sorted = Array<float>(frequencies);
 	sorted.sort();
 	return sorted == frequencies;

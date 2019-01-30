@@ -49,7 +49,8 @@ class CompressorProcessor  : public ProcessorBase
 
 	float currentGain;
 	float currentRMS;
-	CircularArray<float> rmsValues;
+	float squareSum;
+	CircularArray<float> squareValues;
 
 	float ratio, threshold, attack, release;
 	/**

@@ -23,7 +23,8 @@ CompressorProcessor::CompressorProcessor() :
     attack{0.003f},
     release{0.1f},
     currentGain{0.0f},
-    currentRMS{-90}
+    currentRMS{-90},
+    squareSum{0}
 {
     setPlayConfigDetails(2, 2, getSampleRate(), getBlockSize());
 }
@@ -40,20 +41,23 @@ const String CompressorProcessor::getName() const
 void CompressorProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     setRateAndBufferSizeDetails(sampleRate, samplesPerBlock);
-    int rmsValuesSize = 1 + static_cast<int>(averagingTime*sampleRate/samplesPerBlock);
-    rmsValues.clear();
-    rmsValues.insertMultiple(0, 0, rmsValuesSize);
+    int squareValuesSize = 1 + static_cast<int>(averagingTime*sampleRate/samplesPerBlock);
+    squareValues.clear();
+    squareValues.insertMultiple(0, 0, squareValuesSize);
+    squareSum = 0;
 }
 
 void CompressorProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     int numSamples = buffer.getNumSamples();
-    float sensorValue = (buffer.getRMSLevel(0, 0, numSamples) + buffer.getRMSLevel(1, 0, numSamples))/2;
+    float sensorValue = (square(buffer.getRMSLevel(0, 0, numSamples)) + square(buffer.getRMSLevel(1, 0, numSamples)))/2.0f;
 
-    rmsValues.setAndRotate(square(sensorValue));
-    sensorValue = 0;
-    for (float el : rmsValues) sensorValue += el;
-    currentRMS = Decibels::gainToDecibels(sqrt(sensorValue/rmsValues.size()));
+    squareSum -= squareValues.getFirst();
+    squareSum += sensorValue;
+
+    squareValues.setAndRotate(sensorValue);
+
+    currentRMS = Decibels::gainToDecibels(sqrt(squareSum/squareValues.size()));
 
     float compressGain = jmin(threshold - currentRMS, 0.0f)*(ratio-1)/ratio;
     float diffGain = compressGain - currentGain;

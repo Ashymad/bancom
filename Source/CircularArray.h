@@ -28,10 +28,16 @@ class CircularArray : public Array<E>
 	    Array<E>::clear();
 	    currentElement = 0;
 	}
+
 	void setAndRotate(const E& element)
 	{
 	    this->setUnchecked(currentElement, element);
-	    currentElement = ++currentElement < this->size() ? currentElement : 0;
+	    currentElement = ++currentElement % this->size();
+	}
+
+	E getFirst()
+	{
+	    return this->getUnchecked(currentElement);
 	}
 
     private:

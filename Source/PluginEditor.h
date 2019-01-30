@@ -20,16 +20,12 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
 
-//==============================================================================
-/**
-*/
 class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::Listener, public Button::Listener, public Timer
 {
     public:
 	BancomAudioProcessorEditor (BancomAudioProcessor&);
 	~BancomAudioProcessorEditor();
 
-	//==============================================================================
 	void paint (Graphics&) override;
 	void resized() override;
 	void sliderValueChanged (Slider* slider) override;
@@ -44,8 +40,6 @@ class BancomAudioProcessorEditor  : public AudioProcessorEditor, public Slider::
 	void timerCallback() override;
 
     private:
-	// This reference is provided as a quick way for your editor to
-	// access the processor object that created it.
 	BancomAudioProcessor& processor;
 
 	OwnedArray<Image> levelMeterImages;

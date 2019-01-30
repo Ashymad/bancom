@@ -30,11 +30,9 @@ class GainProcessor  : public ProcessorBase
 	void processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages) override;
 	void reset() override;
 
-	void setGainDecibels(float newGainDecibels);
-	float getGainDecibels() const;
-
     private:
-	dsp::Gain<float> gain;
+	dsp::Gain<float> gainDSP;
+	AudioParameterFloat* gain;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GainProcessor)
 };

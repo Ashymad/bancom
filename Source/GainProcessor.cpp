@@ -20,7 +20,11 @@
 GainProcessor::GainProcessor()
 {
     setPlayConfigDetails(2, 2, getSampleRate(), getBlockSize());
-    gain.setGainDecibels (0.0f);
+    addParameter(gain = new AudioParameterFloat(
+		"gain",
+		"Gain",
+		NormalisableRange<float>(0.0f, 40.0f),
+		0.0f));
 }
 
 GainProcessor::~GainProcessor()
@@ -36,27 +40,18 @@ void GainProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     setRateAndBufferSizeDetails(sampleRate, samplesPerBlock);
     dsp::ProcessSpec spec{sampleRate, static_cast<uint32>(samplesPerBlock), 2};
-    gain.prepare(spec);
+    gainDSP.prepare(spec);
 }
 
 void GainProcessor::reset()
 {
-    gain.reset();
-}
-
-void GainProcessor::setGainDecibels(float newGainDecibels)
-{
-    gain.setGainDecibels(newGainDecibels);
-}
-
-float GainProcessor::getGainDecibels() const
-{
-    return gain.getGainDecibels();
+    gainDSP.reset();
 }
 
 void GainProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     dsp::AudioBlock<float> block{buffer};
     dsp::ProcessContextReplacing<float> context{block};
-    gain.process(context);
+    gainDSP.setGainDecibels(*gain);
+    gainDSP.process(context);
 }

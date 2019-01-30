@@ -42,10 +42,10 @@ BancomAudioProcessorEditor::BancomAudioProcessorEditor(BancomAudioProcessor& p) 
 	    frequencySliders.getLast()->setValue(bTree.getProperty("frequency", dontSendNotification));
 	}
 
-	gainSliders.getLast()->setValue(bTree.getProperty("gain"), dontSendNotification);
+	gainSliders.getLast()->setValue(static_cast<double>(bTree.getProperty("gain"))*gainSliders.getLast()->getMaximum(), dontSendNotification);
 	ratioSliders.getLast()->setValue(bTree.getProperty("ratio"), dontSendNotification);
-	attackSliders.getLast()->setValue(static_cast<float>(bTree.getProperty("attack"))*1000, dontSendNotification);
-	releaseSliders.getLast()->setValue(static_cast<float>(bTree.getProperty("release"))*1000, dontSendNotification);
+	attackSliders.getLast()->setValue(static_cast<double>(bTree.getProperty("attack"))*1000, dontSendNotification);
+	releaseSliders.getLast()->setValue(static_cast<double>(bTree.getProperty("release"))*1000, dontSendNotification);
 	thresholdSliders.getLast()->setValue(bTree.getProperty("threshold"), dontSendNotification);
     }
     
@@ -190,11 +190,13 @@ void BancomAudioProcessorEditor::timerCallback()
 
 void BancomAudioProcessorEditor::sliderValueChanged (Slider* slider)
 {
+    float newValue = (slider->getValue() - slider->getMinimum())/(slider->getMaximum() - slider->getMinimum());
+
     for(int i = 0; i < gainSliders.size(); ++i)
     {
 	if(slider == gainSliders[i])
 	{
-	    processor.setGainOnFilter(i, slider->getValue());
+	    processor.setGainOnFilter(i, newValue);
 	}
 	else if (slider == attackSliders[i])
 	{

@@ -168,8 +168,7 @@ void BancomAudioProcessor::setFrequencies(const Array<float>& frequencies)
 void BancomAudioProcessor::setGainOnFilter(unsigned int filterNumber, float newGainDecibels)
 {
     if (filterNumber < gainNodes.size()){
-	GainProcessor* gainProcessor = dynamic_cast<GainProcessor*>(gainNodes[filterNumber]->getProcessor());
-	gainProcessor->setGainDecibels(newGainDecibels);
+	gainNodes[filterNumber]->getProcessor()->getParameters()[0]->setValue(newGainDecibels);
     }
 }
 
@@ -180,6 +179,7 @@ void BancomAudioProcessor::setAttackOnFilter(unsigned int filterNumber, float ne
 	compressorProcessor->setAttack(newAttack);
     }
 }
+
 void BancomAudioProcessor::setRatioOnFilter(unsigned int filterNumber, float newRatio)
 {
     if (filterNumber < compressorNodes.size()){
@@ -187,6 +187,7 @@ void BancomAudioProcessor::setRatioOnFilter(unsigned int filterNumber, float new
 	compressorProcessor->setRatio(newRatio);
     }
 }
+
 void BancomAudioProcessor::setThresholdOnFilter(unsigned int filterNumber, float newThreshold)
 {
     if (filterNumber < compressorNodes.size()){
@@ -194,6 +195,7 @@ void BancomAudioProcessor::setThresholdOnFilter(unsigned int filterNumber, float
 	compressorProcessor->setThreshold(newThreshold);
     }
 }
+
 void BancomAudioProcessor::setReleaseOnFilter(unsigned int filterNumber, float newRelease)
 {
     if (filterNumber < compressorNodes.size()){
@@ -201,6 +203,7 @@ void BancomAudioProcessor::setReleaseOnFilter(unsigned int filterNumber, float n
 	compressorProcessor->setRelease(newRelease);
     }
 }
+
 float BancomAudioProcessor::getRMSOnFilter(unsigned int filterNumber) const
 {
     if (filterNumber < compressorNodes.size()){
@@ -208,6 +211,7 @@ float BancomAudioProcessor::getRMSOnFilter(unsigned int filterNumber) const
 	return compressorProcessor->getRMS();
     } else return -90;
 }
+
 float BancomAudioProcessor::getCompressionOnFilter(unsigned int filterNumber) const
 {
     if (filterNumber < compressorNodes.size()){
@@ -225,10 +229,10 @@ void BancomAudioProcessor::getStateInformation (MemoryBlock& destData)
 	ValueTree bTree = ValueTree(Identifier("Band" + std::to_string(i)));
 	CompressorProcessor* compressorProcessor = dynamic_cast<CompressorProcessor*>(compressorNodes[i]->getProcessor());
 	Array<float> compressorParameters = compressorProcessor->getParametersFloat();
-	GainProcessor* gainProcessor = dynamic_cast<GainProcessor*>(gainNodes[i]->getProcessor());
+	AudioProcessorParameter* gain = gainNodes[i]->getProcessor()->getParameters()[0];
 
 	if (i > 0) bTree.setProperty("frequency", frequencies[i-1], nullptr);
-	bTree.setProperty("gain", gainProcessor->getGainDecibels(), nullptr);
+	bTree.setProperty("gain", gain->getValue(), nullptr);
 	bTree.setProperty("attack", compressorParameters[0], nullptr);
 	bTree.setProperty("release", compressorParameters[1], nullptr);
 	bTree.setProperty("ratio", compressorParameters[2], nullptr);
@@ -251,7 +255,7 @@ void BancomAudioProcessor::setStateInformation (const void* data, int sizeInByte
 	for (int i = 0; i < tree.getNumChildren(); ++i)
 	{
 	    ValueTree bTree = tree.getChild(i);
-	    CompressorProcessor*  compressorProcessor = new CompressorProcessor();
+	    CompressorProcessor* compressorProcessor = new CompressorProcessor();
 	    GainProcessor* gainProcessor = new GainProcessor();
 
 	    if (i > 0) frequencies.add(bTree.getProperty("frequency"));
@@ -262,7 +266,7 @@ void BancomAudioProcessor::setStateInformation (const void* data, int sizeInByte
 	    float ratio = bTree.getProperty("ratio");
 	    float threshold = bTree.getProperty("threshold");
 
-	    gainProcessor->setGainDecibels(gain);
+	    gainProcessor->getParameters()[0]->setValue(gain);
 	    compressorProcessor->setAttack(attack);
 	    compressorProcessor->setRelease(release);
 	    compressorProcessor->setRatio(ratio);

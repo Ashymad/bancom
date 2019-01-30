@@ -12,14 +12,18 @@
 
 #include "IIRFilterCascadeProcessor.h"
 
-template<typename FloatType>
-ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> designIIRLowpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order);
+namespace helpers {
+    template<typename FloatType>
+    ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>>
+    designIIRLowpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order);
 
-template<typename FloatType>
-ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> designIIRHighpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order);
+    template<typename FloatType>
+    ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>>
+    designIIRHighpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order);
 
-OwnedArray<IIRFilterCascadeProcessor> designLRFilterBank(Array<float>& frequencies, double sampleRate, int order);
+    OwnedArray<IIRFilterCascadeProcessor>
+    designLRFilterBank(Array<float>& frequencies, double sampleRate, int order);
 
-float applyGainSlopeDecibels(AudioSampleBuffer& buffer,
-	float startGainDecibels, float endGainDecibles, float slopeDecibels,
-	unsigned int startIndex=0);
+    float applyGainSlopeDecibels(AudioSampleBuffer& buffer, float startGainDecibels,
+	    float endGainDecibles, float slopeDecibels, int startIndex=0);
+}

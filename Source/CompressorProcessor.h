@@ -19,18 +19,22 @@ class CompressorProcessor  : public ProcessorBase
     public:
 	CompressorProcessor();
 	~CompressorProcessor();
+
 	const String getName() const override;
 	void prepareToPlay (double sampleRate, int samplesPerBlock) override;
 	void processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages) override;
 	void reset() override;
+
 	void setAttack(float newAttack);
 	void setRelease(float newRelease);
 	void setRatio(float newRatio);
 	void setThreshold(float newThreshold);
 	void setParametersFloat(const Array<float>& parameters);
+
 	float getRMS() const;
 	float getCompression() const;
-	Array<float> getParametersFloat();
+	Array<float> getParametersFloat() const;
+
     private:
 	const float slope = 6;
 	const float averagingTime = 0.5;
@@ -39,6 +43,7 @@ class CompressorProcessor  : public ProcessorBase
 	float currentGain;
 	float currentRMS;
 	CircularArray<float> rmsValues;
+
 	float ratio, threshold, attack, release;
 	/**
 	 * Ratio - RMS [dB] over threshold is divided by this value to obtain the gain

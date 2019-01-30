@@ -11,38 +11,43 @@
 #include "helpers.h"
 
 template<typename FloatType>
-ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> designIIRLowpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order)
+ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>>
+helpers::designIIRLowpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order)
 {
     jassert(order % 2 == 0);
-    ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> coeff = dsp::FilterDesign<FloatType>::designIIRLowpassHighOrderButterworthMethod(frequency, sampleRate, order/2);
+    ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> coeff(
+	    dsp::FilterDesign<FloatType>::designIIRLowpassHighOrderButterworthMethod(frequency, sampleRate, order/2));
     coeff.addArray(ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>>(coeff));
     return coeff;
 }
 
 template<typename FloatType>
-ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> designIIRHighpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order)
+ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>>
+helpers::designIIRHighpassHighOrderLRMethod(FloatType frequency, double sampleRate, int order)
 {
     jassert(order % 2 == 0);
-    ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> coeff = dsp::FilterDesign<FloatType>::designIIRHighpassHighOrderButterworthMethod(frequency, sampleRate, order/2);
+    ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>> coeff(
+	    dsp::FilterDesign<FloatType>::designIIRHighpassHighOrderButterworthMethod(frequency, sampleRate, order/2));
     coeff.addArray(ReferenceCountedArray<dsp::IIR::Coefficients<FloatType>>(coeff));
     return coeff;
 }
 
-OwnedArray<IIRFilterCascadeProcessor> designLRFilterBank(Array<float>& frequencies, double sampleRate, int order)
+OwnedArray<IIRFilterCascadeProcessor>
+helpers::designLRFilterBank(Array<float>& frequencies, double sampleRate, int order)
 {
     int crosses = frequencies.size();
 
-    Array<ReferenceCountedArray<dsp::IIR::Coefficients<float>>*> LPs;
-    Array<ReferenceCountedArray<dsp::IIR::Coefficients<float>>*> HPs;
-    OwnedArray<IIRFilterCascadeProcessor> filterBank = OwnedArray<IIRFilterCascadeProcessor>();
+    jassert(frequencies.sort() == frequencies); // the frequencies must be sorted
+
+    std::vector<ReferenceCountedArray<dsp::IIR::Coefficients<float>>> LPs{};
+    std::vector<ReferenceCountedArray<dsp::IIR::Coefficients<float>>> HPs{};
+    OwnedArray<IIRFilterCascadeProcessor> filterBank{};
     filterBank.add(new IIRFilterCascadeProcessor());
 
-    frequencies.sort();
-    
     for (int i = frequencies.size() - 1; i >= 0; --i)
     {
-	LPs.add(new ReferenceCountedArray<dsp::IIR::Coefficients<float>>(designIIRLowpassHighOrderLRMethod(frequencies[i], sampleRate, order)));
-	HPs.add(new ReferenceCountedArray<dsp::IIR::Coefficients<float>>(designIIRHighpassHighOrderLRMethod(frequencies[i], sampleRate, order)));
+	LPs.push_back(designIIRLowpassHighOrderLRMethod(frequencies[i], sampleRate, order));
+	HPs.push_back(designIIRHighpassHighOrderLRMethod(frequencies[i], sampleRate, order));
 	filterBank.add(new IIRFilterCascadeProcessor());
     }
     
@@ -50,22 +55,22 @@ OwnedArray<IIRFilterCascadeProcessor> designLRFilterBank(Array<float>& frequenci
     {
 	for (int filter = 0; filter < crosses; ++filter)
 	{
-	    filterBank[processor]->addFilterFromCoefficients(processor > filter ? *LPs[filter] : *HPs[filter]);
+	    filterBank[processor]->addFilterFromCoefficients(processor > filter ? LPs[filter] : HPs[filter]);
 	}
     }
 
     return filterBank;
 }
 
-float applyGainSlopeDecibels(AudioSampleBuffer& buffer,
-	float startGainDecibels, float endGainDecibels, float slopeDecibels,
-	unsigned int startIndex) // slope is in decibels per sample
+float helpers::applyGainSlopeDecibels(AudioSampleBuffer& buffer, float startGainDecibels,
+	float endGainDecibels, float slopeDecibels, int startIndex) // slope is in decibels per sample
 {
     int numSamples = buffer.getNumSamples();
     int numChannels = buffer.getNumChannels();
 
     jassert(startIndex < numSamples);
     jassert(slopeDecibels >= 0);
+    jassert(startIndex >= 0);
 
     float endGain = Decibels::decibelsToGain(endGainDecibels);
     int sign = endGainDecibels > startGainDecibels ?  1 : -1;
@@ -79,7 +84,10 @@ float applyGainSlopeDecibels(AudioSampleBuffer& buffer,
 	currentGain = Decibels::decibelsToGain(startGainDecibels);
 	for (int sample = startIndex; sample < numSamples; ++sample)
 	{
-	    if (sign*currentGain < sign*endGain) currentGain *= slope;
+	    if (sign*currentGain < sign*endGain)
+	    {
+		currentGain *= slope;
+	    }
 	    wPointer[sample] *= currentGain;
 	}
     }
